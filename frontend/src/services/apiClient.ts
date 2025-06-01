@@ -1,49 +1,35 @@
 // frontend/src/services/apiClient.ts
-const BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_URL || "http://localhost:5000";
+import axios from 'axios';
 
-type HttpMethod = 'GET' | 'POST' | 'PUT' | 'DELETE' | 'PATCH';
+console.log('BACKEND_URL:', process.env.BACKEND_URL);
 
-interface RequestOptions extends RequestInit {
-  body?: any; // Allow any type for body, will be JSON.stringified
-}
+const apiClient = axios.create({
+  baseURL: process.env.BACKEND_URL,
+  withCredentials: true,
+});
 
-export async function apiClient<T>(
-  endpoint: string,
-  method: HttpMethod = 'GET',
-  options?: RequestOptions
-): Promise<T> {
-  const headers = {
-    'Content-Type': 'application/json',
-    ...options?.headers,
-  };
-
-  const config: RequestInit = {
-    method,
-    headers,
-    ...options,
-  };
-
-  if (options?.body !== undefined) {
-    config.body = JSON.stringify(options.body);
-  }
-
-  const response = await fetch(`${BACKEND_URL}${endpoint}`, config);
-
-  if (!response.ok) {
-    let errorData: any;
-    try {
-      errorData = await response.json();
-    } catch (e) {
-      // If the response is not JSON, use the status text
-      throw new Error(`HTTP error! Status: ${response.status}, Message: ${response.statusText}`);
+// Optional: Add an interceptor to handle common error responses
+apiClient.interceptors.response.use(
+  response => response,
+  error => {
+    // You can centralize error handling here, e.g., for 401 Unauthorized
+    if (error.response) {
+      // The request was made and the server responded with a status code
+      // that falls out of the range of 2xx
+      console.error('API Error:', error.response.data);
+      console.error('Status:', error.response.status);
+      console.error('Headers:', error.response.headers);
+      throw new Error(error.response.data.error || `HTTP error! Status: ${error.response.status}`);
+    } else if (error.request) {
+      // The request was made but no response was received
+      console.error('No response received:', error.request);
+      throw new Error('No response from server. Please try again later.');
+    } else {
+      // Something happened in setting up the request that triggered an Error
+      console.error('Request Error:', error.message);
+      throw new Error(`Request setup error: ${error.message}`);
     }
-    throw new Error(errorData.error || `HTTP error! Status: ${response.status}`);
   }
+);
 
-  // Handle cases where response might be empty (e.g., 204 No Content)
-  if (response.status === 204) {
-    return null as T; // Or handle specifically
-  }
-
-  return response.json() as Promise<T>;
-}
+export default apiClient;

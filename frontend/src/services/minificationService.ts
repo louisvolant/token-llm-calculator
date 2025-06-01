@@ -1,5 +1,5 @@
 // frontend/src/services/minificationService.ts
-import { apiClient } from './apiClient';
+import apiClient from './apiClient';
 
 interface MinificationResult {
   minifiedCode: string;
@@ -11,7 +11,8 @@ interface MinificationResult {
  * @returns The minified code.
  */
 export const minifyCodeRemoveSpaces = async (code: string): Promise<MinificationResult> => {
-  return apiClient<MinificationResult>('/api/minify/remove-spaces', 'POST', { body: { code } });
+  const response = await apiClient.post<MinificationResult>('/api/minify/remove-spaces', { code });
+  return response.data;
 };
 
 /**
@@ -21,5 +22,6 @@ export const minifyCodeRemoveSpaces = async (code: string): Promise<Minification
  * @returns The minified code (or placeholder).
  */
 export const minifyCodeRewriteNames = async (code: string): Promise<MinificationResult> => {
-  return apiClient<MinificationResult>('/api/minify/rewrite-names', 'POST', { body: { code } });
+  const response = await apiClient.post<MinificationResult>('/api/minify/rewrite-names', { code });
+  return response.data;
 };

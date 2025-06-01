@@ -1,5 +1,5 @@
 // frontend/src/services/tokenizationService.ts
-import { apiClient } from './apiClient';
+import apiClient from './apiClient';
 
 interface TokenizationResult {
   tokenCount: number;
@@ -12,7 +12,8 @@ interface TokenizationResult {
  * @returns The token count.
  */
 export const calculateOpenAITokens = async (text: string, model: string = 'cl100k_base'): Promise<TokenizationResult> => {
-  return apiClient<TokenizationResult>('/api/tokenize/openai', 'POST', { body: { text, model } });
+  const response = await apiClient.post<TokenizationResult>('/api/tokenize/openai', { text, model });
+  return response.data;
 };
 
 /**
@@ -22,5 +23,6 @@ export const calculateOpenAITokens = async (text: string, model: string = 'cl100
  * @returns The token count.
  */
 export const calculateHFTokens = async (text: string, modelName: string): Promise<TokenizationResult> => {
-  return apiClient<TokenizationResult>('/api/tokenize/hf', 'POST', { body: { text, modelName } });
+  const response = await apiClient.post<TokenizationResult>('/api/tokenize/hf', { text, modelName });
+  return response.data;
 };
