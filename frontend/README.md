@@ -86,7 +86,7 @@ To get the project up and running on your local machine, follow these steps:
 5.  **Create Frontend Environment File:**
     Create a `.env.local` file in the `frontend` directory:
     ```
-    NEXT_PUBLIC_BACKEND_URL=http://localhost:5000
+    BACKEND_URL=http://localhost:3001
     ```
 
 ### Running the Project

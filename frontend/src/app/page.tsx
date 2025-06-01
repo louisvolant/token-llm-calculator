@@ -5,8 +5,6 @@ import { useState, useCallback } from "react";
 import Image from "next/image"; // Import Next.js Image component
 
 import { calculateOpenAITokens, calculateHFTokens } from "@/services/tokenizationService";
-import { minifyCodeRemoveSpaces, minifyCodeRewriteNames } from "@/services/minificationService";
-
 
 const Home = () => {
   const [inputText, setInputText] = useState("");
@@ -54,6 +52,19 @@ const Home = () => {
     const hfModelName = "Xenova/llama-tokenizer";
     handleApiCall(calculateHFTokens, inputText, hfModelName);
   }, [inputText, handleApiCall]);
+
+  // Make sure to import these if they are needed elsewhere,
+  // but for the onClick handler, we use the useCallback wrappers.
+  // import { minifyCodeRemoveSpaces, minifyCodeRewriteNames } from "@/services/minificationService";
+  // If you *don't* import them, then you can't use them in the handleApiCall type definition,
+  // but since handleApiCall uses `any[]`, it implicitly works.
+  // However, it's good practice to import what you use. Let's assume they are imported for clarity.
+  // You might need to add them back if handleApiCall's type definition becomes stricter.
+
+  // Assuming you still need these functions for the handleApiCall argument
+  // Re-adding the imports to ensure they are available for `handleApiCall`'s first argument type, even if not directly used in onClick.
+  const { minifyCodeRemoveSpaces, minifyCodeRewriteNames } = require("@/services/minificationService");
+
 
   const onMinifyCodeRemoveSpaces = useCallback(() => {
     if (!inputText) {
@@ -124,7 +135,7 @@ const Home = () => {
           </button>
           <button
             className="w-full px-6 py-3 bg-yellow-500 hover:bg-yellow-600 text-white font-semibold rounded-lg shadow-md transition duration-300 ease-in-out disabled:opacity-50"
-            onClick={minifyCodeRemoveSpaces}
+            onClick={onMinifyCodeRemoveSpaces}
             disabled={loading}
           >
             {loading && error === null ? "Minifying..." : "Minify code (remove spaces)"}

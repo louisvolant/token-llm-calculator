@@ -1,10 +1,10 @@
 // frontend/src/services/apiClient.ts
 import axios from 'axios';
 
-console.log('BACKEND_URL:', process.env.BACKEND_URL);
+console.log('BACKEND_URL:', process.env.NEXT_PUBLIC_API_URL);
 
 const apiClient = axios.create({
-  baseURL: process.env.BACKEND_URL,
+  baseURL: process.env.NEXT_PUBLIC_API_URL,
   withCredentials: true,
 });
 
