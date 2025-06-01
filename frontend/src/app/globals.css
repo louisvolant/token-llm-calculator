@@ -1,0 +1,33 @@
+/* src/app/globals.css */
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Base styles (light mode by default) */
+body {
+  font-family: Arial, Helvetica, sans-serif;
+}
+
+/* Dark mode styles */
+body.dark {
+}
+
+/* You can also use CSS variables for more granular control if preferred,
+   but Tailwind's dark: utility is often sufficient.
+   If you want to stick with CSS variables for more complex theming:
+*/
+/* :root {
+  --background: #ffffff;
+  --foreground: #171717;
+}
+
+.dark {
+  --background: #0a0a0a;
+  --foreground: #ededed;
+}
+
+body {
+  background: var(--background);
+  color: var(--foreground);
+  font-family: Arial, Helvetica, sans-serif;
+} */
