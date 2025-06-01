@@ -78,13 +78,13 @@ const Home = () => {
           {/* Logo */}
           <Image
             src="/icon_calculator.png" // Path to your logo in the public directory
-            alt="Token LLM Calculator Logo"
+            alt="Tokenizors.net Logo"
             width={48} // Adjust size as needed
             height={48} // Adjust size as needed
             className="mr-3" // Margin to the right of the image
           />
           <h1 className="text-4xl font-extrabold text-blue-600 dark:text-blue-400">
-            Token LLM Calculator
+            Tokenizors.net
           </h1>
         </header>
 

@@ -12,15 +12,15 @@ const robotoMono = Roboto_Mono({ subsets: ["latin"] });
 export const metadata = {
   // Main title that appears in browser tab
   title: {
-    default: "Token LLM Calculator - Estimate & Minify Code",
-    template: "%s | Token LLM Calculator", // For pages that set their own title
+    default: "Tokenizors.net - Estimate & Minify Code",
+    template: "%s | Tokenizors.net", // For pages that set their own title
   },
   // Site description for search engines
   description: "An online tool to estimate token counts for OpenAI and Hugging Face (Mistral, Llama) models, and to minify code by removing spaces or rewriting names.",
   // Keywords for SEO
-  keywords: ["LLM", "Token Calculator", "OpenAI", "Hugging Face", "Mistral", "Llama", "NLP", "Code Minifier", "Prompt Engineering", "AI"],
+  keywords: ["LLM", "Token Calculator", "OpenAI", "Hugging Face", "Mistral", "Llama", "NLP", "Code Minifier", "Prompt Engineering", "AI", "Tokenizors"],
   // Author information
-  authors: [{ name: "Louis Volant", url: "https://www.louisvolant.com" }],
+  authors: [{ name: "Tokenizors Team", url: "https://tokenizors.net" }],
   // Favicon (from public directory)
   icons: {
     icon: "/icon_calculator.png", // Path to your favicon in the public directory
@@ -29,16 +29,16 @@ export const metadata = {
   },
   // Open Graph metadata for social media sharing
   openGraph: {
-    title: "Token LLM Calculator - Estimate & Minify Code",
+    title: "Tokenizors.net - Estimate & Minify Code",
     description: "Estimate token counts for AI models and minify your code.",
-    url: "https://token-llm-calculator.louisvolant.com", // Replace with your actual domain
-    siteName: "Token LLM Calculator",
+    url: "https://tokenizors.net", // Replace with your actual domain
+    siteName: "Tokenizors.net",
     images: [
       {
-        url: "https://token-llm-calculator.louisvolant.com/og-image.png", // Path to your Open Graph image in public
+        url: "https://tokenizors.net/og-image.png", // Path to your Open Graph image in public
         width: 1200,
         height: 630,
-        alt: "Token LLM Calculator Logo",
+        alt: "Tokenizors.net Logo",
       },
     ],
     locale: "en_US",
@@ -47,14 +47,14 @@ export const metadata = {
   // Twitter Card metadata
   twitter: {
     card: "summary_large_image",
-    title: "Token LLM Calculator - Estimate & Minify Code",
+    title: "Tokenizors.net - Estimate & Minify Code",
     description: "Estimate token counts for AI models and minify your code.",
-    creator: "@yourtwitterhandle", // Your Twitter handle
-    images: ["https://token-llm-calculator.louisvolant.com/twitter-image.png"], // Path to your Twitter card image
+    creator: "@tokenizors", // Your Twitter handle
+    images: ["https://tokenizors.net/twitter-image.png"], // Path to your Twitter card image
   },
   // Canonical URL (important for SEO)
   alternates: {
-    canonical: "https://token-llm-calculator.louisvolant.com", // Replace with your actual domain
+    canonical: "https://tokenizors.net", // Replace with your actual domain
   },
 };
 // --- END REWRITTEN METADATA ---

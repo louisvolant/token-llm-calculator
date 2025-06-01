@@ -16,7 +16,7 @@ export function LanguageProvider({ children }: { children: ReactNode }) {
 
     switch (key) {
       case 'footer_copyright':
-        translatedString = `© ${variables?.year || new Date().getFullYear()} Token LLM Calculator. All rights reserved.`;
+        translatedString = `© ${variables?.year || new Date().getFullYear()} Tokenizors.net. All rights reserved.`;
         break;
       case 'toggle_dark_mode':
         translatedString = 'Toggle Dark Mode';

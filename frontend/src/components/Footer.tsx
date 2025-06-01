@@ -33,7 +33,6 @@ export default function Footer() {
           <span className="text-gray-700 dark:text-gray-400">
             {t('footer_copyright', { year: new Date().getFullYear() })}
           </span>
-          {/* ThemeToggle is here now */}
           <ThemeToggle />
         </div>
       </div>
