@@ -14,40 +14,56 @@ import {
 
 const Home = () => {
   const [inputText, setInputText] = useState("");
-  const [tokenCount, setTokenCount] = useState<number | null>(null);
-  const [minifiedCode, setMinifiedCode] = useState("");
-  const [loading, setLoading] = useState(false);
+  const [openAITokenCount, setOpenAITokenCount] = useState<number | null>(null);
+  const [hfTokenCount, setHFTokenCount] = useState<number | null>(null);
+  const [minifiedCodeOutput, setMinifiedCodeOutput] = useState("");
+
+  const [loadingOpenAI, setLoadingOpenAI] = useState(false);
+  const [loadingHF, setLoadingHF] = useState(false);
+  const [loadingMinifyRemoveSpaces, setLoadingMinifyRemoveSpaces] = useState(false);
+  const [loadingMinifyJS, setLoadingMinifyJS] = useState(false);
+  const [loadingMinifyCSS, setLoadingMinifyCSS] = useState(false);
+  const [loadingMinifyTS, setLoadingMinifyTS] = useState(false);
+
   const [error, setError] = useState<string | null>(null);
 
-  // Generic handler for API calls
-  const handleApiCall = useCallback(async (apiFunction: (...args: any[]) => Promise<any>, ...args: any[]) => {
-    setLoading(true);
+  // Generic handler for API calls, now accepts a setter for loading and result
+  const handleApiCall = useCallback(async (
+    apiFunction: (...args: any[]) => Promise<any>,
+    setSpecificLoading: (loading: boolean) => void,
+    setSpecificResult: (data: any) => void, // Changed from `(data: any) => void` to just `(data: any)` might be an issue with some parsers, but it was correct. Let's look for a missing parenthesis/brace elsewhere.
+    ...args: any[]
+  ) => { // <--- The issue is likely somewhere *before* this closing parenthesis/curly brace
+    setSpecificLoading(true);
     setError(null);
-    setTokenCount(null); // Clear previous results
-    setMinifiedCode(""); // Clear previous results
+    setOpenAITokenCount(null); // Clear all previous results when any new operation starts
+    setHFTokenCount(null);
+    setMinifiedCodeOutput("");
 
     try {
       const data = await apiFunction(...args);
-      // Determine what to set based on the function called
-      if (data && typeof data.tokenCount === 'number') {
-        setTokenCount(data.tokenCount);
-      } else if (data && typeof data.minifiedCode === 'string') {
-        setMinifiedCode(data.minifiedCode);
-      }
+      setSpecificResult(data);
     } catch (err: any) {
       setError(err.message);
       console.error("API call error:", err);
     } finally {
-      setLoading(false);
+      setSpecificLoading(false);
     }
-  }, []);
+  }, []); // <--- This closing parenthesis and bracket is critical. It must be there.
+
 
   const onCalculateOpenAITokens = useCallback(() => {
     if (!inputText) {
       setError("Please enter text to calculate tokens.");
       return;
     }
-    handleApiCall(calculateOpenAITokens, inputText, "cl100k_base");
+    handleApiCall(
+      calculateOpenAITokens,
+      setLoadingOpenAI,
+      (data) => setOpenAITokenCount(data.tokenCount),
+      inputText,
+      "cl100k_base"
+    );
   }, [inputText, handleApiCall]);
 
   const onCalculateHFTokens = useCallback(() => {
@@ -56,7 +72,13 @@ const Home = () => {
       return;
     }
     const hfModelName = "Xenova/llama-tokenizer";
-    handleApiCall(calculateHFTokens, inputText, hfModelName);
+    handleApiCall(
+      calculateHFTokens,
+      setLoadingHF,
+      (data) => setHFTokenCount(data.tokenCount),
+      inputText,
+      hfModelName
+    );
   }, [inputText, handleApiCall]);
 
   const onMinifyCodeRemoveSpacesAndComments = useCallback(() => {
@@ -64,15 +86,25 @@ const Home = () => {
       setError("Please enter code to minify.");
       return;
     }
-    handleApiCall(minifyCodeRemoveSpacesAndComments, inputText);
-  }, [inputText, handleApiCall]);
+    handleApiCall(
+      minifyCodeRemoveSpacesAndComments,
+      setLoadingMinifyRemoveSpaces,
+      (data) => setMinifiedCodeOutput(data.minifiedCode),
+      inputText
+    );
+  }, [inputText, handleApiCall]); // Confirmed this is correct
 
   const onMinifyCodeRewriteNames = useCallback(() => {
     if (!inputText) {
       setError("Please enter code to minify.");
       return;
     }
-    handleApiCall(minifyCodeRewriteJavascript, inputText);
+    handleApiCall(
+      minifyCodeRewriteJavascript,
+      setLoadingMinifyJS,
+      (data) => setMinifiedCodeOutput(data.minifiedCode),
+      inputText
+    );
   }, [inputText, handleApiCall]);
 
   const onMinifyCodeCss = useCallback(() => {
@@ -80,7 +112,12 @@ const Home = () => {
       setError("Please enter CSS code to minify.");
       return;
     }
-    handleApiCall(minifyCodeCss, inputText);
+    handleApiCall(
+      minifyCodeCss,
+      setLoadingMinifyCSS,
+      (data) => setMinifiedCodeOutput(data.minifiedCode),
+      inputText
+    );
   }, [inputText, handleApiCall]);
 
   const onMinifyCodeTypescript = useCallback(() => {
@@ -88,19 +125,31 @@ const Home = () => {
       setError("Please enter TypeScript code to minify.");
       return;
     }
-    handleApiCall(minifyCodeTypescript, inputText);
+    handleApiCall(
+      minifyCodeTypescript,
+      setLoadingMinifyTS,
+      (data) => setMinifiedCodeOutput(data.minifiedCode),
+      inputText
+    );
   }, [inputText, handleApiCall]);
 
-  // NEW: Handler for moving minified code to input
   const onMoveMinifiedToInput = useCallback(() => {
-    if (minifiedCode) {
-      setInputText(minifiedCode);
-      setMinifiedCode(""); // Clear minified output after moving it
-      setTokenCount(null); // Clear token count as input changed
+    if (minifiedCodeOutput) {
+      setInputText(minifiedCodeOutput);
+      setMinifiedCodeOutput(""); // Clear minified output after moving it
+      setOpenAITokenCount(null); // Clear token counts as input changed
+      setHFTokenCount(null);
     }
-  }, [minifiedCode]);
+  }, [minifiedCodeOutput]);
 
-  return (
+  // Determine if any token calculation is loading
+  const anyTokenLoading = loadingOpenAI || loadingHF;
+  // Determine if any minification is loading
+  const anyMinificationLoading = loadingMinifyRemoveSpaces || loadingMinifyJS || loadingMinifyCSS || loadingMinifyTS;
+  // Determine if any operation at all is loading for the general error message
+  const anyLoading = anyTokenLoading || anyMinificationLoading;
+
+  return ( // THIS IS THE LINE 152 MENTIONED IN THE ERROR
     <div className="min-h-screen flex flex-col items-center justify-center p-4 bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100">
       <div className="w-full max-w-4xl">
         <header className="flex items-center justify-center mb-8">
@@ -135,90 +184,96 @@ const Home = () => {
           </div>
         )}
 
-        {/* Token Calculation Buttons Group */}
-        <section className="mb-8"> {/* Added mb-8 for spacing below this group */}
+        {/* Token Calculation Section */}
+        <section className="mb-8">
           <h2 className="text-xl font-bold mb-4 text-gray-800 dark:text-gray-200">Token Calculation</h2>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <button
               className="w-full px-6 py-3 bg-green-500 hover:bg-green-600 text-white font-semibold rounded-lg shadow-md transition duration-300 ease-in-out disabled:opacity-50"
               onClick={onCalculateOpenAITokens}
-              disabled={loading}
+              disabled={loadingOpenAI || anyMinificationLoading}
             >
-              {loading && error === null ? "Calculating..." : "Calculate OpenAI Tokens"}
+              {loadingOpenAI ? "Calculating..." : "Calculate OpenAI Tokens"}
             </button>
             <button
               className="w-full px-6 py-3 bg-purple-500 hover:bg-purple-600 text-white font-semibold rounded-lg shadow-md transition duration-300 ease-in-out disabled:opacity-50"
               onClick={onCalculateHFTokens}
-              disabled={loading}
+              disabled={loadingHF || anyMinificationLoading}
             >
-              {loading && error === null ? "Calculating..." : "Calculate HF Tokens"}
+              {loadingHF ? "Calculating..." : "Calculate HF Tokens"}
             </button>
           </div>
+          {/* Token Count Results (Moved here) */}
+          {(openAITokenCount !== null || hfTokenCount !== null) && (
+            <div className="mt-6 p-4 bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-200 rounded-lg shadow-md text-center">
+              {openAITokenCount !== null && (
+                <p className="text-xl font-bold">
+                  OpenAI Estimated Token Count: {openAITokenCount}
+                </p>
+              )}
+              {hfTokenCount !== null && (
+                <p className="text-xl font-bold mt-2">
+                  HF Estimated Token Count: {hfTokenCount}
+                </p>
+              )}
+            </div>
+          )}
         </section>
 
-        {/* Minification Buttons Group */}
+        {/* Minification Buttons Section */}
         <section className="mb-8">
           <h2 className="text-xl font-bold mb-4 text-gray-800 dark:text-gray-200">Code Minification</h2>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4"> {/* Adjusted grid layout for 4 buttons */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <button
               className="w-full px-6 py-3 bg-yellow-500 hover:bg-yellow-600 text-white font-semibold rounded-lg shadow-md transition duration-300 ease-in-out disabled:opacity-50"
               onClick={onMinifyCodeRemoveSpacesAndComments}
-              disabled={loading}
+              disabled={loadingMinifyRemoveSpaces || anyTokenLoading}
             >
-              {loading && error === null ? "Minifying..." : "Minify Code (Remove Spaces)"}
+              {loadingMinifyRemoveSpaces ? "Minifying..." : "Minify Code (Remove Spaces)"}
             </button>
             <button
               className="w-full px-6 py-3 bg-red-500 hover:bg-red-600 text-white font-semibold rounded-lg shadow-md transition duration-300 ease-in-out disabled:opacity-50"
               onClick={onMinifyCodeRewriteNames}
-              disabled={loading}
+              disabled={loadingMinifyJS || anyTokenLoading}
             >
-              {loading && error === null ? "Minifying..." : "Minify JavaScript (Rewrite Names)"}
+              {loadingMinifyJS ? "Minifying..." : "Minify JavaScript"}
             </button>
             <button
               className="w-full px-6 py-3 bg-blue-500 hover:bg-blue-600 text-white font-semibold rounded-lg shadow-md transition duration-300 ease-in-out disabled:opacity-50"
               onClick={onMinifyCodeCss}
-              disabled={loading}
+              disabled={loadingMinifyCSS || anyTokenLoading}
             >
-              {loading && error === null ? "Minifying..." : "Minify CSS"}
+              {loadingMinifyCSS ? "Minifying..." : "Minify CSS"}
             </button>
             <button
               className="w-full px-6 py-3 bg-indigo-500 hover:bg-indigo-600 text-white font-semibold rounded-lg shadow-md transition duration-300 ease-in-out disabled:opacity-50"
               onClick={onMinifyCodeTypescript}
-              disabled={loading}
+              disabled={loadingMinifyTS || anyTokenLoading}
             >
-              {loading && error === null ? "Minifying..." : "Minify TypeScript"}
+              {loadingMinifyTS ? "Minifying..." : "Minify TypeScript"}
             </button>
           </div>
+          {/* Minified Code Result (Remains here) */}
+          {minifiedCodeOutput && (
+            <div className="mt-6">
+              <label htmlFor="minified-output" className="block text-lg font-medium mb-2">
+                Minified Code:
+              </label>
+              <textarea
+                id="minified-output"
+                className="w-full p-4 border border-gray-300 dark:border-gray-600 rounded-lg shadow-sm bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 resize-y min-h-[150px]"
+                value={minifiedCodeOutput}
+                readOnly
+              ></textarea>
+              <button
+                className="mt-4 w-full px-6 py-3 bg-gray-700 hover:bg-gray-800 text-white font-semibold rounded-lg shadow-md transition duration-300 ease-in-out"
+                onClick={onMoveMinifiedToInput}
+              >
+                Use Minified Code as Input
+              </button>
+            </div>
+          )}
         </section>
-
-        {tokenCount !== null && (
-          <section className="mb-8 p-4 bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-200 rounded-lg shadow-md text-center">
-            <p className="text-xl font-bold">
-              Estimated Token Count: {tokenCount}
-            </p>
-          </section>
-        )}
-
-        {minifiedCode && (
-          <section className="mb-8">
-            <label htmlFor="minified-output" className="block text-lg font-medium mb-2">
-              Minified Code:
-            </label>
-            <textarea
-              id="minified-output"
-              className="w-full p-4 border border-gray-300 dark:border-gray-600 rounded-lg shadow-sm bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 resize-y min-h-[150px]"
-              value={minifiedCode}
-              readOnly
-            ></textarea>
-            {/* NEW: Button to move content up */}
-            <button
-              className="mt-4 w-full px-6 py-3 bg-gray-700 hover:bg-gray-800 text-white font-semibold rounded-lg shadow-md transition duration-300 ease-in-out"
-              onClick={onMoveMinifiedToInput}
-            >
-              Use Minified Code as Input
-            </button>
-          </section>
-        )}
       </div>
     </div>
   );
