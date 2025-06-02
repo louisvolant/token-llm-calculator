@@ -10,8 +10,8 @@ interface MinificationResult {
  * @param code The code string to minify.
  * @returns The minified code.
  */
-export const minifyCodeRemoveSpaces = async (code: string): Promise<MinificationResult> => {
-  const response = await apiClient.post<MinificationResult>('/api/minify/remove-spaces', { code });
+export const minifyCodeRemoveSpacesAndComments = async (code: string): Promise<MinificationResult> => {
+  const response = await apiClient.post<MinificationResult>('/api/minify/remove-spaces-and-comments', { code });
   return response.data;
 };
 
@@ -21,7 +21,7 @@ export const minifyCodeRemoveSpaces = async (code: string): Promise<Minification
  * @param code The code string to minify.
  * @returns The minified code (or placeholder).
  */
-export const minifyCodeRewriteNames = async (code: string): Promise<MinificationResult> => {
-  const response = await apiClient.post<MinificationResult>('/api/minify/rewrite-names', { code });
+export const minifyCodeRewriteJavascript = async (code: string): Promise<MinificationResult> => {
+  const response = await apiClient.post<MinificationResult>('/api/minify/rewrite-javascript', { code });
   return response.data;
 };

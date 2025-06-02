@@ -2,6 +2,7 @@
 const express = require('express');
 const router = express.Router();
 const winston = require('winston');
+const Terser = require('terser');
 
 const logger = winston.createLogger({
   level: 'info',
@@ -12,36 +13,54 @@ const logger = winston.createLogger({
   ],
 });
 
-// Endpoint for Minify code (remove spaces)
-router.post('/minify/remove-spaces', (req, res) => {
+// Endpoint for Minify code (remove spaces and comments)
+router.post('/minify/remove-spaces-and-comments', (req, res) => {
   const { code } = req.body;
 
   if (!code) {
     return res.status(400).json({ error: 'Code is required for minification.' });
   }
 
-  const minifiedCode = code.replace(/\s+/g, ''); // Remove all whitespace
+  // Remove all whitespace and comments
+  // This is a basic approach and might not catch all comment types or edge cases perfectly.
+  // For robust comment removal, a proper parser is better, but for just spaces/comments, this is a start.
+  const minifiedCode = code
+    .replace(/\/\*[\s\S]*?\*\/|(?<=[^:])\/\/.*|^\/\/.*$/g, '') // Remove multi-line and single-line comments
+    .replace(/\s+/g, ''); // Remove all whitespace
+
   res.json({ minifiedCode });
 });
 
-// Endpoint for Minify code (rewrite methods & variables names)
-router.post('/minify/rewrite-names', (req, res) => {
+// Endpoint for Minify code (rewrite methods & variables names using Terser)
+router.post('/minify/rewrite-javascript', async (req, res) => {
   const { code } = req.body;
 
   if (!code) {
     return res.status(400).json({ error: 'Code is required for minification.' });
   }
 
-  // IMPORTANT: This is a placeholder.
-  // Real minification by renaming requires a full parser/minifier library (e.g., UglifyJS, Terser, SWC).
-  // Implementing this accurately on the backend would involve:
-  // 1. Parsing the code into an Abstract Syntax Tree (AST).
-  // 2. Traversing the AST to identify and rename variables/functions while avoiding conflicts.
-  // 3. Generating minified code from the transformed AST.
-  // This is a complex task beyond a simple regex or built-in function.
+  try {
+    const result = await Terser.minify(code, {
+      // Terser options
+      compress: {
+        dead_code: true, // Remove unreachable code
+        drop_console: true, // Remove console.log statements
+      },
+      mangle: {
+        toplevel: true, // Mangle top-level variable names
+      },
+    });
 
-  const placeholderMinifiedCode = `/* Minification by renaming is complex. Requires a dedicated parser/minifier. */\n${code}`;
-  res.json({ minifiedCode: placeholderMinifiedCode });
+    if (result.error) {
+      logger.error('Terser minification error:', result.error);
+      return res.status(500).json({ error: 'Failed to minify code.', details: result.error.message });
+    }
+
+    res.json({ minifiedCode: result.code });
+  } catch (error) {
+    logger.error('Unexpected error during Terser minification:', error);
+    res.status(500).json({ error: 'An unexpected error occurred during minification.' });
+  }
 });
 
 module.exports = router;

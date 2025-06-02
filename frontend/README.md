@@ -146,7 +146,7 @@ The Node.js backend exposes the following API endpoints:
         ```
     * **Note:** The first call to a new `modelName` can be slow as the tokenizer model needs to be downloaded.
 
-* **`POST /api/minify/remove-spaces`**
+* **`POST /api/minify/remove-spaces-and-comments`**
     * **Description:** Minifies the provided code by removing all whitespace characters.
     * **Request Body (JSON):**
         ```json
@@ -161,7 +161,7 @@ The Node.js backend exposes the following API endpoints:
         }
         ```
 
-* **`POST /api/minify/rewrite-names`**
+* **`POST /api/minify/rewrite-javascript`**
     * **Description:** Placeholder endpoint for advanced code minification (e.g., rewriting variable/method names). **Currently returns a placeholder message.**
     * **Request Body (JSON):**
         ```json
@@ -180,7 +180,7 @@ The Node.js backend exposes the following API endpoints:
 
 * **Hugging Face Model:** To change the Hugging Face model used for tokenization, modify the `hfModelName` constant in `frontend/src/app/page.tsx` and ensure the backend can load the specified model.
 * **Localization:** The `frontend/src/context/LanguageContext.tsx` is set up as a placeholder. You can expand the `t` function to include more translated strings or integrate a full i18n library.
-* **Minification Logic:** The `minifyCodeRewriteNames` endpoint on the backend (`backend/src/index.ts`) is a placeholder. To implement actual code rewriting (e.g., variable renaming), you would need to integrate a JavaScript parsing/minification library (like `UglifyJS`, `Terser`, or `SWC`) into your Node.js backend. This is a significantly more complex task than simple string manipulation.
+* **Minification Logic:** The `minifyCodeRewriteJavascript` endpoint on the backend (`backend/src/index.ts`) is a placeholder. To implement actual code rewriting (e.g., variable renaming), you would need to integrate a JavaScript parsing/minification library (like `UglifyJS`, `Terser`, or `SWC`) into your Node.js backend. This is a significantly more complex task than simple string manipulation.
 * **Metadata:** Update the `metadata` object in `frontend/src/app/layout.tsx` to reflect your actual domain, Twitter handle, and any custom images for social sharing (Open Graph, Twitter Card).
 
 ## 🛣️ Future Enhancements

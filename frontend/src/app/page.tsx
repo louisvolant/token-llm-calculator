@@ -55,7 +55,7 @@ const Home = () => {
 
   // Make sure to import these if they are needed elsewhere,
   // but for the onClick handler, we use the useCallback wrappers.
-  // import { minifyCodeRemoveSpaces, minifyCodeRewriteNames } from "@/services/minificationService";
+  // import { minifyCodeRemoveSpacesAndComments, minifyCodeRewriteJavascript } from "@/services/minificationService";
   // If you *don't* import them, then you can't use them in the handleApiCall type definition,
   // but since handleApiCall uses `any[]`, it implicitly works.
   // However, it's good practice to import what you use. Let's assume they are imported for clarity.
@@ -63,15 +63,15 @@ const Home = () => {
 
   // Assuming you still need these functions for the handleApiCall argument
   // Re-adding the imports to ensure they are available for `handleApiCall`'s first argument type, even if not directly used in onClick.
-  const { minifyCodeRemoveSpaces, minifyCodeRewriteNames } = require("@/services/minificationService");
+  const { minifyCodeRemoveSpacesAndComments, minifyCodeRewriteJavascript } = require("@/services/minificationService");
 
 
-  const onMinifyCodeRemoveSpaces = useCallback(() => {
+  const onMinifyCodeRemoveSpacesAndComments = useCallback(() => {
     if (!inputText) {
       setError("Please enter code to minify.");
       return;
     }
-    handleApiCall(minifyCodeRemoveSpaces, inputText);
+    handleApiCall(minifyCodeRemoveSpacesAndComments, inputText);
   }, [inputText, handleApiCall]);
 
   const onMinifyCodeRewriteNames = useCallback(() => {
@@ -79,7 +79,7 @@ const Home = () => {
       setError("Please enter code to minify.");
       return;
     }
-    handleApiCall(minifyCodeRewriteNames, inputText);
+    handleApiCall(minifyCodeRewriteJavascript, inputText);
   }, [inputText, handleApiCall]);
 
   return (
@@ -135,7 +135,7 @@ const Home = () => {
           </button>
           <button
             className="w-full px-6 py-3 bg-yellow-500 hover:bg-yellow-600 text-white font-semibold rounded-lg shadow-md transition duration-300 ease-in-out disabled:opacity-50"
-            onClick={onMinifyCodeRemoveSpaces}
+            onClick={onMinifyCodeRemoveSpacesAndComments}
             disabled={loading}
           >
             {loading && error === null ? "Minifying..." : "Minify code (remove spaces)"}
