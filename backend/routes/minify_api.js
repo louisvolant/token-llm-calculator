@@ -4,6 +4,7 @@ const router = express.Router();
 const winston = require('winston');
 const Terser = require('terser');
 const swc = require('@swc/core');
+const CleanCSS = require('clean-css');
 
 const logger = winston.createLogger({
   level: 'info',
@@ -15,24 +16,18 @@ const logger = winston.createLogger({
 });
 
 // Utility function to detect if code is likely TypeScript/TSX
+// Keeping it for the /minify/rewrite-javascript endpoint
 function isTypeScriptCode(code) {
-  // Regex to check for common TypeScript/TSX specific syntax
-  // - Type annotations (e.g., variable: type, function(param: type))
-  // - Interface/Type declarations (interface, type MyType = ...)
-  // - JSX syntax (starts with < and ends with > in a component-like context)
-  //   Note: This can be tricky. A simpler check might be just for angle brackets
-  //   that aren't part of comparisons.
   const typeAnnotationRegex = /:\s*(?:string|number|boolean|any|null|undefined|Array|Promise|React\.FC|JSX\.Element|\w+\[\]|<.*?>)/;
   const interfaceOrTypeRegex = /(interface|type)\s+\w+\s*\{/;
   const enumRegex = /enum\s+\w+\s*\{/;
-  const jsxRegex = /<\w+\s*(\s+\w+=".*?")*\s*\/?\s*>/; // Basic JSX tag detection
+  const jsxRegex = /<\w+\s*(\s+\w+=".*?")*\s*\/?\s*>/;
 
   return (
     typeAnnotationRegex.test(code) ||
     interfaceOrTypeRegex.test(code) ||
     enumRegex.test(code) ||
     jsxRegex.test(code)
-    // You can add more checks here as needed
   );
 }
 
@@ -44,9 +39,6 @@ router.post('/minify/remove-spaces-and-comments', (req, res) => {
     return res.status(400).json({ error: 'Code is required for minification.' });
   }
 
-  // Remove all whitespace and comments
-  // This is a basic approach and might not catch all comment types or edge cases perfectly.
-  // For robust comment removal, a proper parser is better, but for just spaces/comments, this is a start.
   const minifiedCode = code
     .replace(/\/\*[\s\S]*?\*\/|(?<=[^:])\/\/.*|^\/\/.*$/g, '')
     .replace(/\s+/g, '');
@@ -54,7 +46,7 @@ router.post('/minify/remove-spaces-and-comments', (req, res) => {
   res.json({ minifiedCode });
 });
 
-// Endpoint for Minify code (rewrite methods & variables names using Terser)
+// Endpoint for Minify JavaScript (rewrite methods & variables names)
 router.post('/minify/rewrite-javascript', async (req, res) => {
   const { code } = req.body;
 
@@ -67,22 +59,21 @@ router.post('/minify/rewrite-javascript', async (req, res) => {
 
     if (isTypeScriptCode(code)) {
       logger.info('Detected TypeScript/TSX code. Transpiling with SWC...');
-      // Transpile TSX to JavaScript using SWC
       const transpiledResult = await swc.transform(code, {
-        filename: 'input.tsx', // Crucial for SWC to know it's TSX
+        filename: 'input.tsx',
         jsc: {
           parser: {
             syntax: 'typescript',
             tsx: true,
           },
-          target: 'es5', // Or your desired target
+          target: 'es5',
           transform: {
             react: {
               runtime: 'automatic',
             },
           },
         },
-        minify: true, // SWC minifies directly
+        minify: true,
       });
 
       if (transpiledResult.errors && transpiledResult.errors.length > 0) {
@@ -92,7 +83,6 @@ router.post('/minify/rewrite-javascript', async (req, res) => {
       minifiedCode = transpiledResult.code;
     } else {
       logger.info('Detected plain JavaScript code. Minifying with Terser...');
-      // Minify plain JavaScript using Terser
       const result = await Terser.minify(code, {
         compress: {
           dead_code: true,
@@ -112,9 +102,76 @@ router.post('/minify/rewrite-javascript', async (req, res) => {
 
     res.json({ minifiedCode });
   } catch (error) {
-    logger.error('Unexpected error during minification process:', error);
+    logger.error('Unexpected error during JS/TS minification process:', error);
     res.status(500).json({ error: 'An unexpected error occurred during minification.', details: error.message });
   }
 });
+
+// Endpoint for Minify CSS
+router.post('/minify/css', (req, res) => {
+  const { code } = req.body;
+
+  if (!code) {
+    return res.status(400).json({ error: 'CSS code is required for minification.' });
+  }
+
+  try {
+    const output = new CleanCSS().minify(code);
+
+    if (output.errors && output.errors.length > 0) {
+      logger.error('Clean-CSS minification errors:', output.errors);
+      return res.status(400).json({ error: 'Failed to minify CSS.', details: output.errors.join(', ') });
+    }
+    if (output.warnings && output.warnings.length > 0) {
+      logger.warn('Clean-CSS minification warnings:', output.warnings);
+      // You might choose to send warnings to the client or just log them
+    }
+
+    res.json({ minifiedCode: output.styles });
+  } catch (error) {
+    logger.error('Unexpected error during CSS minification:', error);
+    res.status(500).json({ error: 'An unexpected error occurred during CSS minification.', details: error.message });
+  }
+});
+
+// Endpoint for Explicitly Minify TypeScript/TSX
+router.post('/minify/typescript', async (req, res) => {
+  const { code } = req.body;
+
+  if (!code) {
+    return res.status(400).json({ error: 'TypeScript code is required for minification.' });
+  }
+
+  try {
+    logger.info('Explicit TypeScript minification requested. Transpiling with SWC...');
+    const transpiledResult = await swc.transform(code, {
+      filename: 'input.tsx', // Assume TSX for React projects, otherwise 'input.ts'
+      jsc: {
+        parser: {
+          syntax: 'typescript',
+          tsx: true, // Allow TSX syntax
+        },
+        target: 'es5', // Or your desired target ES version
+        transform: {
+          react: {
+            runtime: 'automatic', // Or 'classic'
+          },
+        },
+      },
+      minify: true, // SWC minifies directly
+    });
+
+    if (transpiledResult.errors && transpiledResult.errors.length > 0) {
+      logger.error('SWC transpilation errors for explicit TSX:', transpiledResult.errors);
+      return res.status(400).json({ error: 'Failed to minify explicit TypeScript code.', details: transpiledResult.errors.map(e => e.message).join(', ') });
+    }
+
+    res.json({ minifiedCode: transpiledResult.code });
+  } catch (error) {
+    logger.error('Unexpected error during explicit TypeScript minification:', error);
+    res.status(500).json({ error: 'An unexpected error occurred during explicit TypeScript minification.', details: error.message });
+  }
+});
+
 
 module.exports = router;

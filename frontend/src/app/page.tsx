@@ -5,6 +5,12 @@ import { useState, useCallback } from "react";
 import Image from "next/image"; // Import Next.js Image component
 
 import { calculateOpenAITokens, calculateHFTokens } from "@/services/tokenizationService";
+import {
+  minifyCodeRemoveSpacesAndComments,
+  minifyCodeRewriteJavascript,
+  minifyCodeCss,
+  minifyCodeTypescript,
+} from "@/services/minificationService";
 
 const Home = () => {
   const [inputText, setInputText] = useState("");
@@ -53,18 +59,9 @@ const Home = () => {
     handleApiCall(calculateHFTokens, inputText, hfModelName);
   }, [inputText, handleApiCall]);
 
-  // Make sure to import these if they are needed elsewhere,
-  // but for the onClick handler, we use the useCallback wrappers.
-  // import { minifyCodeRemoveSpacesAndComments, minifyCodeRewriteJavascript } from "@/services/minificationService";
-  // If you *don't* import them, then you can't use them in the handleApiCall type definition,
-  // but since handleApiCall uses `any[]`, it implicitly works.
-  // However, it's good practice to import what you use. Let's assume they are imported for clarity.
-  // You might need to add them back if handleApiCall's type definition becomes stricter.
-
-  // Assuming you still need these functions for the handleApiCall argument
-  // Re-adding the imports to ensure they are available for `handleApiCall`'s first argument type, even if not directly used in onClick.
-  const { minifyCodeRemoveSpacesAndComments, minifyCodeRewriteJavascript } = require("@/services/minificationService");
-
+  // Use direct imports now, remove the `require` if you want proper TypeScript checks
+  // const { minifyCodeRemoveSpacesAndComments, minifyCodeRewriteJavascript } = require("@/services/minificationService");
+  // The direct import is already at the top of the file
 
   const onMinifyCodeRemoveSpacesAndComments = useCallback(() => {
     if (!inputText) {
@@ -82,17 +79,35 @@ const Home = () => {
     handleApiCall(minifyCodeRewriteJavascript, inputText);
   }, [inputText, handleApiCall]);
 
+  // NEW: CSS Minification handler
+  const onMinifyCodeCss = useCallback(() => {
+    if (!inputText) {
+      setError("Please enter CSS code to minify.");
+      return;
+    }
+    handleApiCall(minifyCodeCss, inputText);
+  }, [inputText, handleApiCall]);
+
+  // NEW: Explicit TypeScript Minification handler
+  const onMinifyCodeTypescript = useCallback(() => {
+    if (!inputText) {
+      setError("Please enter TypeScript code to minify.");
+      return;
+    }
+    handleApiCall(minifyCodeTypescript, inputText);
+  }, [inputText, handleApiCall]);
+
+
   return (
     <div className="min-h-screen flex flex-col items-center justify-center p-4 bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100">
       <div className="w-full max-w-4xl">
-        <header className="flex items-center justify-center mb-8"> {/* Changed to justify-center to center title + logo */}
-          {/* Logo */}
+        <header className="flex items-center justify-center mb-8">
           <Image
-            src="/icon_calculator.png" // Path to your logo in the public directory
+            src="/icon_calculator.png"
             alt="Tokenizors.net Logo"
-            width={48} // Adjust size as needed
-            height={48} // Adjust size as needed
-            className="mr-3" // Margin to the right of the image
+            width={48}
+            height={48}
+            className="mr-3"
           />
           <h1 className="text-4xl font-extrabold text-blue-600 dark:text-blue-400">
             Tokenizors.net
@@ -138,14 +153,29 @@ const Home = () => {
             onClick={onMinifyCodeRemoveSpacesAndComments}
             disabled={loading}
           >
-            {loading && error === null ? "Minifying..." : "Minify code (remove spaces)"}
+            {loading && error === null ? "Minifying..." : "Minify Code (Remove Spaces)"}
           </button>
           <button
             className="w-full px-6 py-3 bg-red-500 hover:bg-red-600 text-white font-semibold rounded-lg shadow-md transition duration-300 ease-in-out disabled:opacity-50"
             onClick={onMinifyCodeRewriteNames}
             disabled={loading}
           >
-            {loading && error === null ? "Minifying..." : "Minify code (rewrite names)"}
+            {loading && error === null ? "Minifying..." : "Minify JavaScript"}
+          </button>
+          {/* NEW BUTTONS */}
+          <button
+            className="w-full px-6 py-3 bg-blue-500 hover:bg-blue-600 text-white font-semibold rounded-lg shadow-md transition duration-300 ease-in-out disabled:opacity-50"
+            onClick={onMinifyCodeCss}
+            disabled={loading}
+          >
+            {loading && error === null ? "Minifying..." : "Minify CSS"}
+          </button>
+          <button
+            className="w-full px-6 py-3 bg-indigo-500 hover:bg-indigo-600 text-white font-semibold rounded-lg shadow-md transition duration-300 ease-in-out disabled:opacity-50"
+            onClick={onMinifyCodeTypescript}
+            disabled={loading}
+          >
+            {loading && error === null ? "Minifying..." : "Minify TypeScript"}
           </button>
         </section>
 
