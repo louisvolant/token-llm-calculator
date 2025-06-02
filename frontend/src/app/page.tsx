@@ -2,7 +2,7 @@
 "use client";
 
 import { useState, useCallback } from "react";
-import Image from "next/image"; // Import Next.js Image component
+import Image from "next/image";
 
 import { calculateOpenAITokens, calculateHFTokens } from "@/services/tokenizationService";
 import {
@@ -59,10 +59,6 @@ const Home = () => {
     handleApiCall(calculateHFTokens, inputText, hfModelName);
   }, [inputText, handleApiCall]);
 
-  // Use direct imports now, remove the `require` if you want proper TypeScript checks
-  // const { minifyCodeRemoveSpacesAndComments, minifyCodeRewriteJavascript } = require("@/services/minificationService");
-  // The direct import is already at the top of the file
-
   const onMinifyCodeRemoveSpacesAndComments = useCallback(() => {
     if (!inputText) {
       setError("Please enter code to minify.");
@@ -79,7 +75,6 @@ const Home = () => {
     handleApiCall(minifyCodeRewriteJavascript, inputText);
   }, [inputText, handleApiCall]);
 
-  // NEW: CSS Minification handler
   const onMinifyCodeCss = useCallback(() => {
     if (!inputText) {
       setError("Please enter CSS code to minify.");
@@ -88,7 +83,6 @@ const Home = () => {
     handleApiCall(minifyCodeCss, inputText);
   }, [inputText, handleApiCall]);
 
-  // NEW: Explicit TypeScript Minification handler
   const onMinifyCodeTypescript = useCallback(() => {
     if (!inputText) {
       setError("Please enter TypeScript code to minify.");
@@ -97,6 +91,14 @@ const Home = () => {
     handleApiCall(minifyCodeTypescript, inputText);
   }, [inputText, handleApiCall]);
 
+  // NEW: Handler for moving minified code to input
+  const onMoveMinifiedToInput = useCallback(() => {
+    if (minifiedCode) {
+      setInputText(minifiedCode);
+      setMinifiedCode(""); // Clear minified output after moving it
+      setTokenCount(null); // Clear token count as input changed
+    }
+  }, [minifiedCode]);
 
   return (
     <div className="min-h-screen flex flex-col items-center justify-center p-4 bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100">
@@ -133,50 +135,60 @@ const Home = () => {
           </div>
         )}
 
-        <section className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-8">
-          <button
-            className="w-full px-6 py-3 bg-green-500 hover:bg-green-600 text-white font-semibold rounded-lg shadow-md transition duration-300 ease-in-out disabled:opacity-50"
-            onClick={onCalculateOpenAITokens}
-            disabled={loading}
-          >
-            {loading && error === null ? "Calculating..." : "Calculate OpenAI Tokens"}
-          </button>
-          <button
-            className="w-full px-6 py-3 bg-purple-500 hover:bg-purple-600 text-white font-semibold rounded-lg shadow-md transition duration-300 ease-in-out disabled:opacity-50"
-            onClick={onCalculateHFTokens}
-            disabled={loading}
-          >
-            {loading && error === null ? "Calculating..." : "Calculate HF Tokens"}
-          </button>
-          <button
-            className="w-full px-6 py-3 bg-yellow-500 hover:bg-yellow-600 text-white font-semibold rounded-lg shadow-md transition duration-300 ease-in-out disabled:opacity-50"
-            onClick={onMinifyCodeRemoveSpacesAndComments}
-            disabled={loading}
-          >
-            {loading && error === null ? "Minifying..." : "Minify Code (Remove Spaces)"}
-          </button>
-          <button
-            className="w-full px-6 py-3 bg-red-500 hover:bg-red-600 text-white font-semibold rounded-lg shadow-md transition duration-300 ease-in-out disabled:opacity-50"
-            onClick={onMinifyCodeRewriteNames}
-            disabled={loading}
-          >
-            {loading && error === null ? "Minifying..." : "Minify JavaScript"}
-          </button>
-          {/* NEW BUTTONS */}
-          <button
-            className="w-full px-6 py-3 bg-blue-500 hover:bg-blue-600 text-white font-semibold rounded-lg shadow-md transition duration-300 ease-in-out disabled:opacity-50"
-            onClick={onMinifyCodeCss}
-            disabled={loading}
-          >
-            {loading && error === null ? "Minifying..." : "Minify CSS"}
-          </button>
-          <button
-            className="w-full px-6 py-3 bg-indigo-500 hover:bg-indigo-600 text-white font-semibold rounded-lg shadow-md transition duration-300 ease-in-out disabled:opacity-50"
-            onClick={onMinifyCodeTypescript}
-            disabled={loading}
-          >
-            {loading && error === null ? "Minifying..." : "Minify TypeScript"}
-          </button>
+        {/* Token Calculation Buttons Group */}
+        <section className="mb-8"> {/* Added mb-8 for spacing below this group */}
+          <h2 className="text-xl font-bold mb-4 text-gray-800 dark:text-gray-200">Token Calculation</h2>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <button
+              className="w-full px-6 py-3 bg-green-500 hover:bg-green-600 text-white font-semibold rounded-lg shadow-md transition duration-300 ease-in-out disabled:opacity-50"
+              onClick={onCalculateOpenAITokens}
+              disabled={loading}
+            >
+              {loading && error === null ? "Calculating..." : "Calculate OpenAI Tokens"}
+            </button>
+            <button
+              className="w-full px-6 py-3 bg-purple-500 hover:bg-purple-600 text-white font-semibold rounded-lg shadow-md transition duration-300 ease-in-out disabled:opacity-50"
+              onClick={onCalculateHFTokens}
+              disabled={loading}
+            >
+              {loading && error === null ? "Calculating..." : "Calculate HF Tokens"}
+            </button>
+          </div>
+        </section>
+
+        {/* Minification Buttons Group */}
+        <section className="mb-8">
+          <h2 className="text-xl font-bold mb-4 text-gray-800 dark:text-gray-200">Code Minification</h2>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4"> {/* Adjusted grid layout for 4 buttons */}
+            <button
+              className="w-full px-6 py-3 bg-yellow-500 hover:bg-yellow-600 text-white font-semibold rounded-lg shadow-md transition duration-300 ease-in-out disabled:opacity-50"
+              onClick={onMinifyCodeRemoveSpacesAndComments}
+              disabled={loading}
+            >
+              {loading && error === null ? "Minifying..." : "Minify Code (Remove Spaces)"}
+            </button>
+            <button
+              className="w-full px-6 py-3 bg-red-500 hover:bg-red-600 text-white font-semibold rounded-lg shadow-md transition duration-300 ease-in-out disabled:opacity-50"
+              onClick={onMinifyCodeRewriteNames}
+              disabled={loading}
+            >
+              {loading && error === null ? "Minifying..." : "Minify JavaScript (Rewrite Names)"}
+            </button>
+            <button
+              className="w-full px-6 py-3 bg-blue-500 hover:bg-blue-600 text-white font-semibold rounded-lg shadow-md transition duration-300 ease-in-out disabled:opacity-50"
+              onClick={onMinifyCodeCss}
+              disabled={loading}
+            >
+              {loading && error === null ? "Minifying..." : "Minify CSS"}
+            </button>
+            <button
+              className="w-full px-6 py-3 bg-indigo-500 hover:bg-indigo-600 text-white font-semibold rounded-lg shadow-md transition duration-300 ease-in-out disabled:opacity-50"
+              onClick={onMinifyCodeTypescript}
+              disabled={loading}
+            >
+              {loading && error === null ? "Minifying..." : "Minify TypeScript"}
+            </button>
+          </div>
         </section>
 
         {tokenCount !== null && (
@@ -198,6 +210,13 @@ const Home = () => {
               value={minifiedCode}
               readOnly
             ></textarea>
+            {/* NEW: Button to move content up */}
+            <button
+              className="mt-4 w-full px-6 py-3 bg-gray-700 hover:bg-gray-800 text-white font-semibold rounded-lg shadow-md transition duration-300 ease-in-out"
+              onClick={onMoveMinifiedToInput}
+            >
+              Use Minified Code as Input
+            </button>
           </section>
         )}
       </div>
