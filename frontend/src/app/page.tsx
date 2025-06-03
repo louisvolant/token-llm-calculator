@@ -31,12 +31,12 @@ const Home = () => {
   const handleApiCall = useCallback(async (
     apiFunction: (...args: any[]) => Promise<any>,
     setSpecificLoading: (loading: boolean) => void,
-    setSpecificResult: (data: any) => void, // Changed from `(data: any) => void` to just `(data: any)` might be an issue with some parsers, but it was correct. Let's look for a missing parenthesis/brace elsewhere.
+    setSpecificResult: (data: any) => void,
     ...args: any[]
-  ) => { // <--- The issue is likely somewhere *before* this closing parenthesis/curly brace
+  ) => {
     setSpecificLoading(true);
     setError(null);
-    setOpenAITokenCount(null); // Clear all previous results when any new operation starts
+    setOpenAITokenCount(null);
     setHFTokenCount(null);
     setMinifiedCodeOutput("");
 
@@ -44,12 +44,14 @@ const Home = () => {
       const data = await apiFunction(...args);
       setSpecificResult(data);
     } catch (err: any) {
-      setError(err.message);
+      // Check if the error is an Axios error with a response
+      const errorMessage = err.response?.data?.error?.message || err.message || 'An unknown error occurred';
+      setError(errorMessage);
       console.error("API call error:", err);
     } finally {
       setSpecificLoading(false);
     }
-  }, []); // <--- This closing parenthesis and bracket is critical. It must be there.
+  }, []);
 
 
   const onCalculateOpenAITokens = useCallback(() => {
