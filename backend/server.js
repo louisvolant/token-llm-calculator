@@ -15,7 +15,8 @@ const apiRoutes = require('./routes/api');
 
 const cache = apicache.middleware('1 minute', (req, res) => req.method === 'GET');
 
-app.use(express.json());
+app.use(express.json({ limit: '50mb' })); // Limit of what can be sent
+
 const allowedOrigins = [
   process.env.CORS_DEV_FRONTEND_URL_AND_PORT,
   'https://tokenizors.net',
