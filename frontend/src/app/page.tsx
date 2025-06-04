@@ -1,9 +1,10 @@
 // frontend/src/app/page.tsx
 "use client";
 
-import { useState, useCallback } from "react";
+import { useState, useEffect, useCallback } from "react";
 import Image from "next/image";
 
+import { fetchCsrfToken } from "@/services/apiClient";
 import { calculateOpenAITokens, calculateHFTokens } from "@/services/tokenizationService";
 import {
   minifyCodeRemoveSpacesAndComments,
@@ -26,6 +27,10 @@ const Home = () => {
   const [loadingMinifyTS, setLoadingMinifyTS] = useState(false);
 
   const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    fetchCsrfToken().catch((err) => console.error('CSRF token fetch failed:', err));
+  }, []);
 
   // Generic handler for API calls, now accepts a setter for loading and result
   const handleApiCall = useCallback(async (

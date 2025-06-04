@@ -6,26 +6,58 @@ console.log('BACKEND_URL:', process.env.NEXT_PUBLIC_API_URL);
 const apiClient = axios.create({
   baseURL: process.env.NEXT_PUBLIC_API_URL,
   withCredentials: true,
+  timeout: 30000,
 });
 
-// Optional: Add an interceptor to handle common error responses
+// Function to fetch CSRF token
+let csrfToken: string | null = null;
+const fetchCsrfToken = async () => {
+  try {
+    const response = await apiClient.get<{ csrfToken: string }>('/api/csrf-token');
+    csrfToken = response.data.csrfToken;
+    return csrfToken;
+  } catch (error) {
+    console.error('Failed to fetch CSRF token:', error);
+    throw error;
+  }
+};
+
+// Request interceptor to include CSRF token for POST requests
+apiClient.interceptors.request.use(
+  async (config) => {
+    if (['post', 'put', 'delete'].includes(config.method?.toLowerCase() || '')) {
+      if (!csrfToken) {
+        await fetchCsrfToken();
+      }
+      if (csrfToken) {
+        config.headers['X-CSRF-Token'] = csrfToken;
+      }
+    }
+    return config;
+  },
+  (error) => Promise.reject(error)
+);
+
+// Response interceptor for error handling
 apiClient.interceptors.response.use(
-  response => response,
-  error => {
-    // You can centralize error handling here, e.g., for 401 Unauthorized
+  (response) => response,
+  (error) => {
     if (error.response) {
-      // The request was made and the server responded with a status code
-      // that falls out of the range of 2xx
       console.error('API Error:', error.response.data);
       console.error('Status:', error.response.status);
       console.error('Headers:', error.response.headers);
-      throw new Error(error.response.data.error || `HTTP error! Status: ${error.response.status}`);
+      if (error.response.status === 403 && error.response.data.error === 'Invalid CSRF token') {
+        csrfToken = null;
+        throw new Error('Invalid CSRF token. Please try again.');
+      }
+      if (error.response.status === 404) {
+        throw new Error(`Endpoint not found: ${error.config.url}. Check NEXT_PUBLIC_API_URL.`);
+      }
+      throw new Error(error.response.data.error?.message || `HTTP error! Status: ${error.response.status}`);
     } else if (error.request) {
-      // The request was made but no response was received
       console.error('No response received:', error.request);
       throw new Error('No response from server. Please try again later.');
     } else {
-      // Something happened in setting up the request that triggered an Error
       console.error('Request Error:', error.message);
       throw new Error(`Request setup error: ${error.message}`);
     }
@@ -33,3 +65,4 @@ apiClient.interceptors.response.use(
 );
 
 export default apiClient;
+export { fetchCsrfToken };

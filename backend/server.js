@@ -1,14 +1,14 @@
-// server.js
-
+// backend/server.js
 require('dotenv').config();
 const express = require('express');
 const session = require('express-session');
 const MongoStore = require('connect-mongo');
 const cors = require('cors');
+const csrf = require('csurf');
 const mongoose = require('./config/mongoose');
 
 const app = express();
-app.set('trust proxy', 1); // Trust Vercel's proxy
+app.set('trust proxy', 1);
 
 const apicache = require('apicache');
 const apiRoutes = require('./routes/api');
@@ -53,6 +53,11 @@ app.use(session({
   },
 }));
 
+// Apply CSRF middleware globally
+const csrfProtection = csrf({ cookie: false });
+app.use(csrfProtection);
+
+// Middleware to log session details
 app.use((req, res, next) => {
   console.log('Session config:', {
     secure: process.env.NODE_ENV === 'PRODUCTION',
@@ -62,7 +67,26 @@ app.use((req, res, next) => {
   next();
 });
 
-app.use('/api/', cache, apiRoutes);
+// Log all incoming requests for debugging
+app.use((req, res, next) => {
+  console.log(`[${new Date().toISOString()}] ${req.method} ${req.url}`);
+  next();
+});
+
+// API routes with caching for GET requests
+app.use('/api', cache, apiRoutes);
+
+// Error handling for CSRF token validation failures
+app.use((err, req, res, next) => {
+  if (err.code === 'EBADCSRFTOKEN') {
+    console.log(`CSRF validation failed for ${req.method} ${req.url}`);
+    res.status(403).json({ error: 'Invalid CSRF token' });
+  } else {
+    console.error('Unexpected error:', err);
+    res.status(500).json({ error: 'Internal server error' });
+    next(err);
+  }
+});
 
 const PORT = process.env.PORT || 3001;
 
