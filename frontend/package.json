@@ -6,23 +6,22 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "next lint"
+    "lint": "eslint . --ext .js,.jsx,.ts,.tsx"
   },
   "dependencies": {
     "axios": "^1.9.0",
-    "next": "^15.3.3",
-    "react": "^18.3.1",
-    "react-dom": "^18.3.1",
+    "next": "^16.0.7",
+    "react": "^19.2.1",
+    "react-dom": "^19.2.1",
     "tailwindcss": "^3.4.14"
   },
   "devDependencies": {
-    "@eslint/eslintrc": "^2.1.4",
     "@types/node": "^20.16.11",
     "@types/react": "^18.3.11",
     "@types/react-dom": "^18.3.0",
     "autoprefixer": "^10.4.21",
-    "eslint": "^8.57.0",
-    "eslint-config-next": "14.2.15",
+    "eslint": "^9.11.1",
+    "eslint-config-next": "^16.0.7",
     "postcss": "^8.4.47",
     "typescript": "^5.6.3"
   }
