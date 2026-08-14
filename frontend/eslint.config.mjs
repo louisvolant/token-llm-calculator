@@ -1,10 +1,10 @@
 // eslint.config.mjs
 import next from 'eslint-config-next';
 
-export default [
-  next,
-  next.configs.coreWebVitals,
-  next.configs.typescript,
+const nextConfigs = next;
+
+const config = [
+  ...nextConfigs,
   {
     ignores: [
       'out/**',
@@ -19,3 +19,5 @@ export default [
     },
   },
 ];
+
+export default config;

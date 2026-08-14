@@ -11,18 +11,21 @@ interface ThemeContextType {
 const ThemeContext = createContext<ThemeContextType | undefined>(undefined);
 
 export function Providers({ children }: { children: ReactNode }) {
-  const [darkMode, setDarkMode] = useState(false);
+  const [darkMode, setDarkMode] = useState(() => {
+    if (typeof window !== 'undefined') {
+      const savedTheme = localStorage.getItem('theme');
+      const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+      const initialTheme = savedTheme ? savedTheme === 'dark' : prefersDark;
+      document.documentElement.classList.toggle('dark', initialTheme);
+      return initialTheme;
+    }
+    return false;
+  });
 
   useEffect(() => {
-    // This effect runs only on the client
-    const savedTheme = localStorage.getItem('theme'); // Reads from local storage
-    const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
-    const initialTheme = savedTheme ? savedTheme === 'dark' : prefersDark;
-
-    setDarkMode(initialTheme);
-    // Apply the class to the documentElement (<html> tag)
-    document.documentElement.classList.toggle('dark', initialTheme);
-  }, []);
+    // Apply class on mount for client-side hydration
+    document.documentElement.classList.toggle('dark', darkMode);
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   const toggleDarkMode = () => {
     setDarkMode((prev) => {

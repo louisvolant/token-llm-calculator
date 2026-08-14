@@ -3,17 +3,12 @@
 
 import { useTheme } from "@/context/ThemeProvider"; // Use your custom useTheme
 import { useLanguage } from "@/context/LanguageContext"; // Use your custom useLanguage
-import { useEffect, useState } from "react"; // Keep useState and useEffect for mounted state
+import { useSyncExternalStore } from "react"; // Keep useState and useState for mounted state
 
 export function ThemeToggle() {
-  const [mounted, setMounted] = useState(false);
+  const mounted = useSyncExternalStore(() => () => {}, () => true, () => false);
   const { darkMode, toggleDarkMode } = useTheme(); // Now using your custom useTheme
   const { t } = useLanguage();
-
-  // useEffect only runs on the client, so now we can safely show the UI
-  useEffect(() => {
-    setMounted(true);
-  }, []);
 
   if (!mounted) {
     return null; // Don't render until mounted to prevent hydration mismatches
