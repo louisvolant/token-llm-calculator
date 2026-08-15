@@ -8,7 +8,7 @@ let AutoTokenizer: any;
 
 async function initializeTokenizer() {
   if (!AutoTokenizer) {
-    const transformers = await import('@xenova/transformers');
+    const transformers = await import('@huggingface/transformers');
     AutoTokenizer = transformers.AutoTokenizer;
   }
 }

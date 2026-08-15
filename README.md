@@ -8,7 +8,7 @@ An intuitive online tool to estimate token counts for Large Language Models (LLM
 
 * **LLM Token Estimation:**
     * Calculate token counts for **OpenAI** models (using `cl100k_base` encoding, compatible with GPT-3.5 Turbo, GPT-4, etc.).
-    * Calculate token counts for **Hugging Face** models (e.g., Llama, Mistral) by leveraging `@xenova/transformers`.
+    * Calculate token counts for **Hugging Face** models (e.g., Llama, Mistral) by leveraging `@huggingface/transformers`.
 * **Code Minification:**
     * **Remove spaces:** Instantly minify code by eliminating all whitespace and comments.
     * **Rewrite names:** Advanced minification using Terser (JS) or SWC (TS/TSX).
@@ -24,7 +24,7 @@ An intuitive online tool to estimate token counts for Large Language Models (LLM
 * **TypeScript**
 * **Tailwind CSS** (Utility-first CSS Framework)
 * **`@dqbd/tiktoken`**: JavaScript port of OpenAI's `tiktoken` for accurate token calculation.
-* **`@xenova/transformers`**: For loading and using Hugging Face tokenizers.
+* **`@huggingface/transformers`**: For loading and using Hugging Face tokenizers.
 * **`terser` / `@swc/core`**: JavaScript/TypeScript minification.
 * **`clean-css`**: CSS minification.
 

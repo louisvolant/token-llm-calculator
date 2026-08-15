@@ -3,11 +3,16 @@
 const nextConfig = {
   serverExternalPackages: [
     '@dqbd/tiktoken',
-    '@xenova/transformers',
+    '@huggingface/transformers',
+    'onnxruntime-node',
+    'onnxruntime-web',
     '@swc/core',
     'clean-css',
     'terser',
   ],
+  outputFileTracingIncludes: {
+    '/api/tokenize/hf': ['./node_modules/onnxruntime-node/bin/**/*'],
+  },
 };
 
 module.exports = nextConfig;
