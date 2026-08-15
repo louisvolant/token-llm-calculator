@@ -1,7 +1,13 @@
 // next.config.js
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  /* config options here */
+  serverExternalPackages: [
+    '@dqbd/tiktoken',
+    '@xenova/transformers',
+    '@swc/core',
+    'clean-css',
+    'terser',
+  ],
 };
 
 module.exports = nextConfig;

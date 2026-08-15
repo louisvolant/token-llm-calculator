@@ -1,42 +1,9 @@
-// frontend/src/services/apiClient.ts
+// src/services/apiClient.ts
 import axios from 'axios';
 
-console.log('BACKEND_URL:', process.env.NEXT_PUBLIC_API_URL);
-
 const apiClient = axios.create({
-  baseURL: process.env.NEXT_PUBLIC_API_URL,
-  withCredentials: true,
   timeout: 30000,
 });
-
-// Function to fetch CSRF token
-let csrfToken: string | null = null;
-const fetchCsrfToken = async () => {
-  try {
-    const response = await apiClient.get<{ csrfToken: string }>('/api/csrf-token');
-    csrfToken = response.data.csrfToken;
-    return csrfToken;
-  } catch (error) {
-    console.error('Failed to fetch CSRF token:', error);
-    throw error;
-  }
-};
-
-// Request interceptor to include CSRF token for POST requests
-apiClient.interceptors.request.use(
-  async (config) => {
-    if (['post', 'put', 'delete'].includes(config.method?.toLowerCase() || '')) {
-      if (!csrfToken) {
-        await fetchCsrfToken();
-      }
-      if (csrfToken) {
-        config.headers['X-CSRF-Token'] = csrfToken;
-      }
-    }
-    return config;
-  },
-  (error) => Promise.reject(error)
-);
 
 // Response interceptor for error handling
 apiClient.interceptors.response.use(
@@ -46,12 +13,8 @@ apiClient.interceptors.response.use(
       console.error('API Error:', error.response.data);
       console.error('Status:', error.response.status);
       console.error('Headers:', error.response.headers);
-      if (error.response.status === 403 && error.response.data.error === 'Invalid CSRF token') {
-        csrfToken = null;
-        throw new Error('Invalid CSRF token. Please try again.');
-      }
       if (error.response.status === 404) {
-        throw new Error(`Endpoint not found: ${error.config.url}. Check NEXT_PUBLIC_API_URL.`);
+        throw new Error(`Endpoint not found: ${error.config.url}.`);
       }
       throw new Error(error.response.data.error?.message || `HTTP error! Status: ${error.response.status}`);
     } else if (error.request) {
@@ -65,4 +28,3 @@ apiClient.interceptors.response.use(
 );
 
 export default apiClient;
-export { fetchCsrfToken };

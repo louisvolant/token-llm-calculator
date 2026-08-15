@@ -9,13 +9,21 @@
     "lint": "eslint . --ext .js,.jsx,.ts,.tsx"
   },
   "dependencies": {
+    "@dqbd/tiktoken": "^1.0.9",
+    "@swc/core": "^1.11.29",
+    "@swc/helpers": "^0.5.17",
+    "@xenova/transformers": "^2.17.2",
     "axios": "^1.9.0",
+    "clean-css": "^5.3.3",
     "next": "^16.3.1",
     "react": "^19.2.8",
     "react-dom": "^19.2.8",
-    "tailwindcss": "^3.4.14"
+    "tailwindcss": "^3.4.14",
+    "terser": "^5.40.0",
+    "winston": "^3.17.0"
   },
   "devDependencies": {
+    "@types/clean-css": "^4.2.11",
     "@types/node": "^20.16.11",
     "@types/react": "^19.2.17",
     "@types/react-dom": "^19.2.3",
