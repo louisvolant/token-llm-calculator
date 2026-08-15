@@ -11,7 +11,7 @@ const nextConfig = {
     'terser',
   ],
   outputFileTracingIncludes: {
-    '/api/tokenize/hf': ['./node_modules/onnxruntime-node/bin/**/*'],
+    '/api/tokenize/hf': ['./node_modules/onnxruntime-node/bin/**/linux/**'],
   },
 };
 
