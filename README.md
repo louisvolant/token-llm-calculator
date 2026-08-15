@@ -19,9 +19,9 @@ An intuitive online tool to estimate token counts for Large Language Models (LLM
 
 ## Technologies Used
 
-* **Next.js 16+** (App Router — UI + API Route Handlers)
+* **Next.js 16** (App Router — UI + API Route Handlers)
 * **React 19** (UI Library)
-* **TypeScript**
+* **TypeScript 6**
 * **Tailwind CSS** (Utility-first CSS Framework)
 * **`@dqbd/tiktoken`**: JavaScript port of OpenAI's `tiktoken` for accurate token calculation.
 * **`@huggingface/transformers`**: For loading and using Hugging Face tokenizers.
@@ -45,7 +45,7 @@ src/lib/           Shared server utils (logger, minify helpers)
 
 ### Prerequisites
 
-* Node.js 20+
+* Node.js 24+
 * npm (comes with Node.js)
 
 ### Installation
