@@ -10,7 +10,7 @@
   },
   "dependencies": {
     "@dqbd/tiktoken": "^1.0.9",
-    "@huggingface/transformers": "^4.2.0",
+    "@huggingface/tokenizers": "^0.2.0",
     "@swc/core": "^1.11.29",
     "@swc/helpers": "^0.5.17",
     "axios": "^1.9.0",

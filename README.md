@@ -8,7 +8,7 @@ An intuitive online tool to estimate token counts for Large Language Models (LLM
 
 * **LLM Token Estimation:**
     * Calculate token counts for **OpenAI** models (using `cl100k_base` encoding, compatible with GPT-3.5 Turbo, GPT-4, etc.).
-    * Calculate token counts for **Hugging Face** models (e.g., Llama, Mistral) by leveraging `@huggingface/transformers`.
+    * Calculate token counts for **Hugging Face** models (e.g., Llama, Mistral) by leveraging `@huggingface/tokenizers`.
 * **Code Minification:**
     * **Remove spaces:** Instantly minify code by eliminating all whitespace and comments.
     * **Rewrite names:** Advanced minification using Terser (JS) or SWC (TS/TSX).
@@ -24,7 +24,7 @@ An intuitive online tool to estimate token counts for Large Language Models (LLM
 * **TypeScript 6**
 * **Tailwind CSS** (Utility-first CSS Framework)
 * **`@dqbd/tiktoken`**: JavaScript port of OpenAI's `tiktoken` for accurate token calculation.
-* **`@huggingface/transformers`**: For loading and using Hugging Face tokenizers.
+* **`@huggingface/tokenizers`**: Lightweight tokenizer library for Hugging Face models (e.g., Llama, Mistral).
 * **`terser` / `@swc/core`**: JavaScript/TypeScript minification.
 * **`clean-css`**: CSS minification.
 
@@ -103,13 +103,12 @@ Each endpoint is served by a Next.js Route Handler under `src/app/api/`.
 The application is deployed on Vercel as a full-stack Next.js project.
 
 ### Serverless Function Size Optimization (`/api/tokenize/hf`)
-Vercel enforces a maximum uncompressed Serverless Function bundle size limit of **250 MB**. Using `@huggingface/transformers` can easily exceed this limit (~361 MB) because of `onnxruntime-web` (~130 MB WASM) and `onnxruntime-node` multi-platform binaries (~210 MB).
+Vercel enforces a maximum uncompressed Serverless Function bundle size limit of **250 MB**. The previous use of `@huggingface/transformers` bloated the function to **~361 MB** because of unused heavy dependencies like `onnxruntime-web` (~130 MB WASM), `onnxruntime-node` multi-platform binaries (~210 MB), and `sharp`.
 
-The following configuration in `next.config.js` keeps the bundle size well within limits:
-1. **`serverExternalPackages`**: Only `@huggingface/transformers` is retained. `onnxruntime-node` and `onnxruntime-web` are excluded from `serverExternalPackages` so Vercel does not blindly copy their entire `node_modules` folders.
-2. **`outputFileTracingIncludes`**: Retains only the single native binary required by Vercel's runtime environment (`linux/x64`, ~34 MB).
-3. **`outputFileTracingExcludes`**: Excludes unused `onnxruntime-web` WASM files and platform binaries for Windows, macOS, and Linux ARM64.
-4. **Result**: Total uncompressed function size drops from **361.19 MB down to ~60 MB**, safely below the 250 MB limit while maintaining fast build times and lower cold start latency.
+By migrating directly to **`@huggingface/tokenizers`**:
+1. **Lightweight Tokenization**: Since this API only needs token counting and does not run ONNX neural network inference, `@huggingface/tokenizers` provides the exact same tokenization results in a pure JavaScript/WASM package under **600 KB**.
+2. **Minimal Bundle Size**: The total uncompressed function trace drops from **361.19 MB down to ~2 MB** (over 99% reduction), completely eliminating deployment failures and minimizing serverless cold start times.
+3. **In-Memory Caching**: Downloaded tokenizer models (`tokenizer.json`) are cached in memory between invocations for near-instantaneous tokenization.
 
 ## Customization
 
