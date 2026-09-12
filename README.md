@@ -98,6 +98,19 @@ Each endpoint is served by a Next.js Route Handler under `src/app/api/`.
     * Request Body: `{ "code": "interface Foo { bar: string } const x: Foo = {bar: 'hi'}" }`
     * Response: `{ "minifiedCode": "var x={bar:\"hi\"};" }`
 
+## Deployment (Vercel)
+
+The application is deployed on Vercel as a full-stack Next.js project.
+
+### Serverless Function Size Optimization (`/api/tokenize/hf`)
+Vercel enforces a maximum uncompressed Serverless Function bundle size limit of **250 MB**. Using `@huggingface/transformers` can easily exceed this limit (~361 MB) because of `onnxruntime-web` (~130 MB WASM) and `onnxruntime-node` multi-platform binaries (~210 MB).
+
+The following configuration in `next.config.js` keeps the bundle size well within limits:
+1. **`serverExternalPackages`**: Only `@huggingface/transformers` is retained. `onnxruntime-node` and `onnxruntime-web` are excluded from `serverExternalPackages` so Vercel does not blindly copy their entire `node_modules` folders.
+2. **`outputFileTracingIncludes`**: Retains only the single native binary required by Vercel's runtime environment (`linux/x64`, ~34 MB).
+3. **`outputFileTracingExcludes`**: Excludes unused `onnxruntime-web` WASM files and platform binaries for Windows, macOS, and Linux ARM64.
+4. **Result**: Total uncompressed function size drops from **361.19 MB down to ~60 MB**, safely below the 250 MB limit while maintaining fast build times and lower cold start latency.
+
 ## Customization
 
 * **Hugging Face Model:** change the `hfModelName` constant in `src/app/page.tsx` to use another tokenizer.
