@@ -1,12 +1,7 @@
 // next.config.js
 /** @type {import('next').NextConfig} */
-const nextConfig = {
-  serverExternalPackages: [
-    '@dqbd/tiktoken',
-    '@swc/core',
-    'clean-css',
-    'terser',
-  ],
-};
+const nextConfig = {};
 
 module.exports = nextConfig;
+
+import('@opennextjs/cloudflare').then(m => m.initOpenNextCloudflareForDev());

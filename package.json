@@ -1,23 +1,27 @@
 {
-  "name": "frontend",
+  "name": "token-llm-calculator",
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "dev": "next dev",
     "build": "next build",
+    "dev": "next dev",
     "start": "next start",
-    "lint": "eslint . --ext .js,.jsx,.ts,.tsx"
+    "lint": "eslint . --ext .js,.jsx,.ts,.tsx",
+    "preview": "opennextjs-cloudflare build && opennextjs-cloudflare preview",
+    "deploy": "opennextjs-cloudflare build && opennextjs-cloudflare deploy",
+    "upload": "opennextjs-cloudflare build && opennextjs-cloudflare upload",
+    "cf-typegen": "wrangler types --env-interface CloudflareEnv cloudflare-env.d.ts"
   },
   "dependencies": {
-    "@dqbd/tiktoken": "^1.0.9",
     "@huggingface/tokenizers": "^0.2.0",
-    "@swc/core": "^1.11.29",
-    "@swc/helpers": "^0.5.17",
+    "@opennextjs/cloudflare": "^1.20.6",
     "axios": "^1.9.0",
     "clean-css": "^5.3.3",
+    "js-tiktoken": "^1.0.21",
     "next": "^16.3.1",
     "react": "^19.2.8",
     "react-dom": "^19.2.8",
+    "sucrase": "^3.35.1",
     "tailwindcss": "^3.4.14",
     "terser": "^5.40.0",
     "winston": "^3.17.0"
@@ -31,6 +35,7 @@
     "eslint": "^9.11.1",
     "eslint-config-next": "^16.3.1",
     "postcss": "^8.4.47",
-    "typescript": "^6.0.3"
+    "typescript": "^6.0.3",
+    "wrangler": "^4.131.1"
   }
 }

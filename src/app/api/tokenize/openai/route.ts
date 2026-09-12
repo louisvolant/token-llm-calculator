@@ -1,6 +1,6 @@
 // src/app/api/tokenize/openai/route.ts
 import { NextRequest, NextResponse } from 'next/server';
-import { get_encoding } from '@dqbd/tiktoken';
+import { getEncoding } from 'js-tiktoken';
 import { logger } from '@/lib/logger';
 
 export const runtime = 'nodejs';
@@ -16,7 +16,7 @@ export async function POST(request: NextRequest) {
   }
 
   try {
-    const encoding = get_encoding(model || 'cl100k_base');
+    const encoding = getEncoding((model as any) || 'cl100k_base');
     const tokens = encoding.encode(text);
     return NextResponse.json({ tokenCount: tokens.length });
   } catch (error: any) {
