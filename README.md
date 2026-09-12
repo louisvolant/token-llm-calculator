@@ -115,6 +115,7 @@ By migrating directly to **`@huggingface/tokenizers`**:
 * **Hugging Face Model:** change the `hfModelName` constant in `src/app/page.tsx` to use another tokenizer.
 * **Localization:** expand the `t` function in `src/context/LanguageContext.tsx`.
 * **Metadata:** update the `metadata` object in `src/app/layout.tsx` (domain, social shares, etc.).
+* **Footer Links:** configure external project and tool links in `src/lib/links.ts`.
 
 ## License
 
