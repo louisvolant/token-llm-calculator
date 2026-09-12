@@ -44,3 +44,10 @@ next-env.d.ts
 *.iml
 .idea
 *concatenated_codebase.txt
+# OpenNext
+.open-next
+
+# wrangler files
+.wrangler
+.dev.vars*
+!.dev.vars.example

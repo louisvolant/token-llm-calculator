@@ -11,6 +11,8 @@ const config = [
       'build/**',
       'dist/**',
       '.next/**',
+      '.open-next/**',
+      '.wrangler/**',
       'node_modules/**',
     ],
   },

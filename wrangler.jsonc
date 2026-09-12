@@ -1,0 +1,36 @@
+{
+	"$schema": "node_modules/wrangler/config-schema.json",
+	"main": ".open-next/worker.js",
+	"name": "token-llm-calculator",
+	"keep_vars": true,
+	"compatibility_date": "2026-09-11",
+	"compatibility_flags": [
+		"nodejs_compat",
+		"global_fetch_strictly_public"
+	],
+	"assets": {
+		"directory": ".open-next/assets",
+		"binding": "ASSETS"
+	},
+	"services": [
+		{
+			// Self-reference service binding, the service name must match the worker name
+			// see https://opennext.js.org/cloudflare/caching
+			"binding": "WORKER_SELF_REFERENCE",
+			"service": "token-llm-calculator"
+		}
+	],
+	"images": {
+		// Enable image optimization
+		// see https://opennext.js.org/cloudflare/howtos/image
+		"binding": "IMAGES"
+	}
+	// Optional: Enable R2 incremental cache if needed
+	// see https://opennext.js.org/cloudflare/caching
+	// "r2_buckets": [
+	// 	{
+	// 		"binding": "NEXT_INC_CACHE_R2_BUCKET",
+	// 		"bucket_name": "token-llm-calculator-opennext-cache"
+	// 	}
+	// ]
+}
