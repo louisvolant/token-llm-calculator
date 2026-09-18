@@ -4,6 +4,7 @@ import { Inter, Roboto_Mono } from "next/font/google";
 import { Providers } from "../context/ThemeProvider";
 import { LanguageProvider } from "../context/LanguageContext";
 import Footer from "@/components/Footer";
+import ServiceWorkerRegister from "@/components/ServiceWorkerRegister";
 
 const inter = Inter({ subsets: ["latin"] });
 const robotoMono = Roboto_Mono({ subsets: ["latin"] });
@@ -21,6 +22,12 @@ export const metadata = {
   keywords: ["LLM", "Token Calculator", "OpenAI", "Hugging Face", "Mistral", "Llama", "NLP", "Code Minifier", "Prompt Engineering", "AI", "Tokenizors"],
   // Author information
   authors: [{ name: "Tokenizors Team", url: "https://tokenizors.net" }],
+  manifest: "/manifest.json",
+  appleWebApp: {
+    capable: true,
+    statusBarStyle: "black-translucent",
+    title: "Tokenizors",
+  },
   // Favicon (from public directory)
   icons: {
     icon: "/icon_calculator.png", // Path to your favicon in the public directory
@@ -67,6 +74,7 @@ export default function RootLayout({
   return (
     <html lang="en" suppressHydrationWarning={true}>
       <body className={`${inter.className} ${robotoMono.className} flex flex-col min-h-screen`}>
+        <ServiceWorkerRegister />
         <LanguageProvider>
           <Providers>
             <main className="flex-grow">

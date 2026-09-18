@@ -1,0 +1,19 @@
+{
+  "name": "Tokenizors - LLM Token Calculator",
+  "short_name": "Tokenizors",
+  "description": "Estimate token counts for AI models and minify code.",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "orientation": "any",
+  "theme_color": "#000000",
+  "background_color": "#000000",
+  "icons": [
+    {
+      "src": "/icon_calculator.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
+}
