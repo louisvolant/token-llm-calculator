@@ -14,6 +14,7 @@ An intuitive online tool to estimate token counts for Large Language Models (LLM
     * **Rewrite names:** Advanced minification using Terser (JS) or Sucrase + Terser (TS/TSX).
     * **CSS minification:** with `clean-css`.
 * **Theming:** Seamless Dark/Light mode toggle, with preference persisted in local storage.
+* **Lightweight Footer:** a single compact line with the copyright, the Personal Page / Portfolio links and the theme toggle.
 * **Responsive Design:** Optimized for various screen sizes using Tailwind CSS.
 * **Edge & Serverless Ready:** Runs entirely on Cloudflare Workers via OpenNext.
 
@@ -146,7 +147,7 @@ This runs `opennextjs-cloudflare build` to create the worker bundle and then dep
 * **Hugging Face Model:** change the `hfModelName` constant in `src/app/page.tsx` to use another tokenizer.
 * **Localization:** expand the `t` function in `src/context/LanguageContext.tsx`.
 * **Metadata:** update the `metadata` object in `src/app/layout.tsx` (domain, social shares, etc.).
-* **Footer Links:** configure external project and tool links in `src/lib/links.ts`.
+* **Footer Links:** configure the Personal Page / Portfolio links in `src/lib/links.ts` (kept short so the footer stays on a single line).
 
 ## License
 
