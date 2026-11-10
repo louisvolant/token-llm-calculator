@@ -129,7 +129,7 @@ All endpoints return JSON errors and validate their input:
 * `413` when the JSON body exceeds 4 MB, `text` exceeds 500,000 characters, or `code` exceeds 200,000 characters.
 * `500` for unexpected server errors. The response includes a `details` field.
 
-Request bodies are parsed through a shared helper that catches malformed or aborted uploads, so they return a `4xx` response instead of crashing the Worker with an `Uncaught Exception (1101)`.
+Request bodies are parsed through a shared helper that catches malformed or aborted uploads, so they return a `4xx` response instead of crashing the Worker with an `Uncaught Exception (1101)`. The web UI displays the API `error` and `details` fields instead of a generic HTTP status.
 
 ## Deployment (Cloudflare Workers)
 

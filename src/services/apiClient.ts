@@ -1,5 +1,6 @@
 // src/services/apiClient.ts
 import axios from 'axios';
+import { extractErrorMessage } from '@/lib/apiError';
 
 const apiClient = axios.create({
   timeout: 30000,
@@ -10,13 +11,15 @@ apiClient.interceptors.response.use(
   (response) => response,
   (error) => {
     if (error.response) {
-      console.error('API Error:', error.response.data);
-      console.error('Status:', error.response.status);
-      console.error('Headers:', error.response.headers);
-      if (error.response.status === 404) {
-        throw new Error(`Endpoint not found: ${error.config.url}.`);
+      const { status, data } = error.response;
+      console.error('API Error:', data);
+      console.error('Status:', status);
+
+      if (status === 404) {
+        throw new Error(`Endpoint not found: ${error.config?.url ?? 'unknown'}.`);
       }
-      throw new Error(error.response.data.error?.message || `HTTP error! Status: ${error.response.status}`);
+
+      throw new Error(extractErrorMessage(data, status));
     } else if (error.request) {
       console.error('No response received:', error.request);
       throw new Error('No response from server. Please try again later.');

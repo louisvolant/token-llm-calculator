@@ -44,8 +44,9 @@ const Home = () => {
       const data = await apiFunction(...args);
       setSpecificResult(data);
     } catch (err: any) {
-      // Check if the error is an Axios error with a response
-      const errorMessage = err.response?.data?.error?.message || err.message || 'An unknown error occurred';
+      // The axios interceptor in apiClient.ts already turns failures into an
+      // Error whose message is safe to display.
+      const errorMessage = err?.message || 'An unknown error occurred';
       setError(errorMessage);
       console.error("API call error:", err);
     } finally {
