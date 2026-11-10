@@ -98,7 +98,8 @@ Each endpoint is served by a Next.js Route Handler under `src/app/api/`.
     * Calculates the token count using a Hugging Face tokenizer.
     * Request Body: `{ "text": "Your input text here.", "modelName": "Xenova/llama-tokenizer" }`
     * Response: `{ "tokenCount": 456 }`
-    * Note: the first call to a new `modelName` downloads the tokenizer definition.
+    * `modelName` must be an `organization/model` id. The first call for a model downloads its definition (15-second timeout), and concurrent calls share a single download.
+    * Returns `502` when the tokenizer cannot be downloaded and `504` when Hugging Face does not answer in time.
 
 * **`POST /api/minify/remove-spaces-and-comments`**
     * Request Body: `{ "code": "function   hello ( ) { return  'world' ; }" }`
