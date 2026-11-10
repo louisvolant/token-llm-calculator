@@ -1,5 +1,5 @@
 // Service Worker for Tokenizors PWA
-const CACHE_NAME = 'tokenizors-pwa-v1';
+const CACHE_NAME = 'tokenizors-pwa-v2';
 
 const PRECACHE_ASSETS = [
   '/',
@@ -8,17 +8,33 @@ const PRECACHE_ASSETS = [
   '/icon_calculator.svg'
 ];
 
+function putInCache(request, response) {
+  const copy = response.clone();
+  return caches
+    .open(CACHE_NAME)
+    .then((cache) => cache.put(request, copy))
+    .catch(() => {
+      /* cache writes are best-effort */
+    });
+}
+
 self.addEventListener('install', (event) => {
   event.waitUntil(
-    caches.open(CACHE_NAME).then((cache) => cache.addAll(PRECACHE_ASSETS)).then(() => self.skipWaiting())
+    caches
+      .open(CACHE_NAME)
+      .then((cache) => cache.addAll(PRECACHE_ASSETS))
+      .then(() => self.skipWaiting())
   );
 });
 
 self.addEventListener('activate', (event) => {
   event.waitUntil(
-    caches.keys().then((keys) =>
-      Promise.all(keys.filter((key) => key !== CACHE_NAME).map((key) => caches.delete(key)))
-    ).then(() => self.clients.claim())
+    caches
+      .keys()
+      .then((keys) =>
+        Promise.all(keys.filter((key) => key !== CACHE_NAME).map((key) => caches.delete(key)))
+      )
+      .then(() => self.clients.claim())
   );
 });
 
@@ -27,6 +43,7 @@ self.addEventListener('fetch', (event) => {
   if (req.method !== 'GET') return;
 
   const url = new URL(req.url);
+  if (url.origin !== self.location.origin) return;
 
   // Never cache dynamic API endpoints
   if (url.pathname.startsWith('/api/')) return;
@@ -37,8 +54,8 @@ self.addEventListener('fetch', (event) => {
       fetch(req)
         .then((response) => {
           if (response && response.status === 200) {
-            const copy = response.clone();
-            caches.open(CACHE_NAME).then((cache) => cache.put(req, copy));
+            // Keep the cache write alive even if the page navigates away.
+            event.waitUntil(putInCache(req, response));
           }
           return response;
         })
@@ -53,14 +70,16 @@ self.addEventListener('fetch', (event) => {
       const fetchPromise = fetch(req)
         .then((response) => {
           if (response && response.status === 200 && response.type === 'basic') {
-            const copy = response.clone();
-            caches.open(CACHE_NAME).then((cache) => cache.put(req, copy));
+            return putInCache(req, response).then(() => response);
           }
           return response;
         })
-        .catch(() => {
-          /* ignore offline fetch errors */
-        });
+        .catch(() => undefined);
+
+      // Track the revalidation so the runtime does not abort it when the page
+      // is closed (this used to show up as "Client Disconnected").
+      event.waitUntil(fetchPromise);
+
       return cached || fetchPromise;
     })
   );

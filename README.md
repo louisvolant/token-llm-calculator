@@ -14,6 +14,7 @@ An intuitive online tool to estimate token counts for Large Language Models (LLM
     * **Rewrite names:** Advanced minification using Terser (JS) or Sucrase + Terser (TS/TSX).
     * **CSS minification:** with `clean-css`.
 * **Theming:** Seamless Dark/Light mode toggle, with preference persisted in local storage.
+* **Installable PWA:** Service worker with offline navigation fallback, update-only reloads, and background revalidation that survives page unloads.
 * **Lightweight Footer:** a single compact line with the copyright, the Personal Page / Portfolio links and the theme toggle.
 * **Responsive Design:** Optimized for various screen sizes using Tailwind CSS.
 * **Edge & Serverless Ready:** Runs entirely on Cloudflare Workers via OpenNext.
