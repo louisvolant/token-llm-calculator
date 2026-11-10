@@ -1,6 +1,7 @@
 // src/app/api/tokenize/openai/route.ts
 import { NextRequest, NextResponse } from 'next/server';
-import { getEncoding, type TiktokenEncoding } from 'js-tiktoken';
+import { getEncoding } from 'js-tiktoken';
+import { resolveEncoding } from '@/lib/tiktoken';
 import {
   handleRouteError,
   MAX_TEXT_LENGTH,
@@ -19,7 +20,7 @@ export async function POST(request: NextRequest) {
         ? body.model
         : 'cl100k_base';
 
-    const encoding = getEncoding(model as TiktokenEncoding);
+    const encoding = getEncoding(resolveEncoding(model));
     const tokens = encoding.encode(text);
 
     return NextResponse.json({ tokenCount: tokens.length });

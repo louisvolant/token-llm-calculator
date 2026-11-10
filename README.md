@@ -92,6 +92,7 @@ Each endpoint is served by a Next.js Route Handler under `src/app/api/`.
 * **`POST /api/tokenize/openai`**
     * Calculates the token count using OpenAI's encoding via `js-tiktoken`.
     * Request Body: `{ "text": "Your input text here.", "model": "cl100k_base" }` (`model` optional)
+    * `model` accepts an encoding name (`cl100k_base`, `o200k_base`, ...) or a model id (`gpt-4o`, `gpt-3.5-turbo`, ...). Unknown values fall back to `cl100k_base`.
     * Response: `{ "tokenCount": 123 }`
 
 * **`POST /api/tokenize/hf`**
