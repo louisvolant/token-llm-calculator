@@ -3,21 +3,24 @@ import { NextRequest, NextResponse } from 'next/server';
 import { logger } from '@/lib/logger';
 import { transform } from 'sucrase';
 import * as Terser from 'terser';
+import {
+  handleRouteError,
+  MAX_CODE_LENGTH,
+  readJsonBody,
+  requireString,
+} from '@/lib/http';
 
 export const runtime = 'nodejs';
 
 export async function POST(request: NextRequest) {
-  const { code } = await request.json();
-
-  if (!code) {
-    return NextResponse.json(
-      { error: 'TypeScript code is required for minification.' },
-      { status: 400 }
-    );
-  }
-
   try {
-    logger.info('Explicit TypeScript minification requested. Transpiling with Sucrase and minifying with Terser...');
+    const body = await readJsonBody(request);
+    const code = requireString(body.code, 'code', MAX_CODE_LENGTH);
+
+    logger.info(
+      'Explicit TypeScript minification requested. Transpiling with Sucrase and minifying with Terser...'
+    );
+
     const transpiled = transform(code, {
       transforms: ['typescript', 'jsx'],
     }).code;
@@ -33,14 +36,7 @@ export async function POST(request: NextRequest) {
     });
 
     return NextResponse.json({ minifiedCode: result.code || '' });
-  } catch (error: any) {
-    logger.error('Unexpected error during explicit TypeScript minification:', error);
-    return NextResponse.json(
-      {
-        error: 'An unexpected error occurred during explicit TypeScript minification.',
-        details: error.message,
-      },
-      { status: 500 }
-    );
+  } catch (error: unknown) {
+    return handleRouteError(error, 'TypeScript minification');
   }
 }

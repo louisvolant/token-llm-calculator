@@ -2,20 +2,20 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { logger } from '@/lib/logger';
 import CleanCSS from 'clean-css';
+import {
+  handleRouteError,
+  MAX_CODE_LENGTH,
+  readJsonBody,
+  requireString,
+} from '@/lib/http';
 
 export const runtime = 'nodejs';
 
 export async function POST(request: NextRequest) {
-  const { code } = await request.json();
-
-  if (!code) {
-    return NextResponse.json(
-      { error: 'CSS code is required for minification.' },
-      { status: 400 }
-    );
-  }
-
   try {
+    const body = await readJsonBody(request);
+    const code = requireString(body.code, 'code', MAX_CODE_LENGTH);
+
     const output = new CleanCSS().minify(code);
 
     if (output.errors && output.errors.length > 0) {
@@ -33,14 +33,7 @@ export async function POST(request: NextRequest) {
     }
 
     return NextResponse.json({ minifiedCode: output.styles });
-  } catch (error: any) {
-    logger.error('Unexpected error during CSS minification:', error);
-    return NextResponse.json(
-      {
-        error: 'An unexpected error occurred during CSS minification.',
-        details: error.message,
-      },
-      { status: 500 }
-    );
+  } catch (error: unknown) {
+    return handleRouteError(error, 'CSS minification');
   }
 }

@@ -1,29 +1,29 @@
 // src/app/api/tokenize/openai/route.ts
 import { NextRequest, NextResponse } from 'next/server';
-import { getEncoding } from 'js-tiktoken';
-import { logger } from '@/lib/logger';
+import { getEncoding, type TiktokenEncoding } from 'js-tiktoken';
+import {
+  handleRouteError,
+  MAX_TEXT_LENGTH,
+  readJsonBody,
+  requireString,
+} from '@/lib/http';
 
 export const runtime = 'nodejs';
 
 export async function POST(request: NextRequest) {
-  const { text, model } = await request.json();
-
-  if (!text) {
-    return NextResponse.json(
-      { error: 'Text is required for tokenization.' },
-      { status: 400 }
-    );
-  }
-
   try {
-    const encoding = getEncoding((model as any) || 'cl100k_base');
+    const body = await readJsonBody(request);
+    const text = requireString(body.text, 'text', MAX_TEXT_LENGTH);
+    const model =
+      typeof body.model === 'string' && body.model.length > 0
+        ? body.model
+        : 'cl100k_base';
+
+    const encoding = getEncoding(model as TiktokenEncoding);
     const tokens = encoding.encode(text);
+
     return NextResponse.json({ tokenCount: tokens.length });
-  } catch (error: any) {
-    logger.error('Error in OpenAI tokenization:', error);
-    return NextResponse.json(
-      { error: `Failed to tokenize text for OpenAI: ${error.message}` },
-      { status: 500 }
-    );
+  } catch (error: unknown) {
+    return handleRouteError(error, 'OpenAI tokenization');
   }
 }

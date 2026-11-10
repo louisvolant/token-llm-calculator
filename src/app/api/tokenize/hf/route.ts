@@ -1,7 +1,12 @@
 // src/app/api/tokenize/hf/route.ts
 import { NextRequest, NextResponse } from 'next/server';
 import { Tokenizer } from '@huggingface/tokenizers';
-import { logger } from '@/lib/logger';
+import {
+  handleRouteError,
+  MAX_TEXT_LENGTH,
+  readJsonBody,
+  requireString,
+} from '@/lib/http';
 
 export const runtime = 'nodejs';
 
@@ -35,23 +40,15 @@ async function getTokenizer(modelName: string): Promise<Tokenizer> {
 
 export async function POST(request: NextRequest) {
   try {
-    const { text, modelName } = await request.json();
-
-    if (!text || !modelName) {
-      return NextResponse.json(
-        { error: 'Text and modelName are required for HF tokenization.' },
-        { status: 400 }
-      );
-    }
+    const body = await readJsonBody(request);
+    const text = requireString(body.text, 'text', MAX_TEXT_LENGTH);
+    const modelName = requireString(body.modelName, 'modelName', 200);
 
     const tokenizer = await getTokenizer(modelName);
     const { ids } = tokenizer.encode(text);
+
     return NextResponse.json({ tokenCount: ids.length });
-  } catch (error: any) {
-    logger.error('Error in Hugging Face tokenization:', error);
-    return NextResponse.json(
-      { error: `Failed to tokenize text for Hugging Face: ${error.message}` },
-      { status: 500 }
-    );
+  } catch (error: unknown) {
+    return handleRouteError(error, 'Hugging Face tokenization');
   }
 }

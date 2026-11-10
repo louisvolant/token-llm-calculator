@@ -4,63 +4,50 @@ import { logger } from '@/lib/logger';
 import { isTypeScriptCode } from '@/lib/minify';
 import { transform } from 'sucrase';
 import * as Terser from 'terser';
+import {
+  handleRouteError,
+  MAX_CODE_LENGTH,
+  readJsonBody,
+  requireString,
+} from '@/lib/http';
 
 export const runtime = 'nodejs';
 
+const terserOptions: Terser.MinifyOptions = {
+  compress: {
+    dead_code: true,
+    drop_console: true,
+  },
+  mangle: {
+    toplevel: true,
+  },
+};
+
 export async function POST(request: NextRequest) {
-  const { code } = await request.json();
-
-  if (!code) {
-    return NextResponse.json(
-      { error: 'Code is required for minification.' },
-      { status: 400 }
-    );
-  }
-
   try {
+    const body = await readJsonBody(request);
+    const code = requireString(body.code, 'code', MAX_CODE_LENGTH);
+
     let minifiedCode: string;
 
     if (isTypeScriptCode(code)) {
-      logger.info('Detected TypeScript/TSX code. Transpiling with Sucrase and minifying with Terser...');
+      logger.info(
+        'Detected TypeScript/TSX code. Transpiling with Sucrase and minifying with Terser...'
+      );
       const transpiled = transform(code, {
         transforms: ['typescript', 'jsx'],
       }).code;
 
-      const result = await Terser.minify(transpiled, {
-        compress: {
-          dead_code: true,
-          drop_console: true,
-        },
-        mangle: {
-          toplevel: true,
-        },
-      });
-
+      const result = await Terser.minify(transpiled, terserOptions);
       minifiedCode = result.code || '';
     } else {
       logger.info('Detected plain JavaScript code. Minifying with Terser...');
-      const result = await Terser.minify(code, {
-        compress: {
-          dead_code: true,
-          drop_console: true,
-        },
-        mangle: {
-          toplevel: true,
-        },
-      });
-
+      const result = await Terser.minify(code, terserOptions);
       minifiedCode = result.code || '';
     }
 
     return NextResponse.json({ minifiedCode });
-  } catch (error: any) {
-    logger.error('Unexpected error during JS/TS minification process:', error);
-    return NextResponse.json(
-      {
-        error: 'An unexpected error occurred during minification.',
-        details: error.message,
-      },
-      { status: 500 }
-    );
+  } catch (error: unknown) {
+    return handleRouteError(error, 'JS/TS minification');
   }
 }

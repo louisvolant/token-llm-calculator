@@ -79,6 +79,12 @@ npm run preview
 ```
 The preview will be available at `http://localhost:8787`.
 
+#### Unit Tests:
+```bash
+npm test
+```
+Runs the route-handler helper tests with the built-in Node.js test runner.
+
 ## API Endpoints
 
 Each endpoint is served by a Next.js Route Handler under `src/app/api/`.
@@ -111,6 +117,16 @@ Each endpoint is served by a Next.js Route Handler under `src/app/api/`.
     * Transpiles and minifies TS/TSX using Sucrase + Terser.
     * Request Body: `{ "code": "interface Foo { bar: string } const x: Foo = {bar: 'hi'}" }`
     * Response: `{ "minifiedCode": "const x={bar:\"hi\"};" }`
+
+### Error Handling and Limits
+
+All endpoints return JSON errors and validate their input:
+
+* `400` for an empty or invalid JSON body, a missing/non-string field, or an unsupported value.
+* `413` when the JSON body exceeds 4 MB, `text` exceeds 500,000 characters, or `code` exceeds 200,000 characters.
+* `500` for unexpected server errors. The response includes a `details` field.
+
+Request bodies are parsed through a shared helper that catches malformed or aborted uploads, so they return a `4xx` response instead of crashing the Worker with an `Uncaught Exception (1101)`.
 
 ## Deployment (Cloudflare Workers)
 
